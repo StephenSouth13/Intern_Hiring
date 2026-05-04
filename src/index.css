@@ -173,4 +173,29 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  .partner-marquee {
+    display: flex;
+    width: max-content;
+    gap: 1.5rem;
+    animation: partner-marquee 45s linear infinite;
+  }
+
+  .partner-marquee-reverse {
+    animation-direction: reverse;
+  }
+
+  .partner-marquee-item {
+    flex: 0 0 auto;
+  }
+}
+
+@keyframes partner-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 0.75rem));
+  }
 }
