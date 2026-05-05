@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 interface User {
-  id: number;
+  id: string | number; // Supabase ID is string, backend ID might be number/string
   email: string;
   firstName: string;
   lastName: string;
@@ -14,7 +15,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (userData: User, authToken: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -25,40 +26,72 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Check localStorage for existing session on initial load
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Failed to parse stored user data', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+  const fetchUserProfile = async (accessToken: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      } else {
+        setUser(null);
       }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      setUser(null);
     }
-    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session && mounted) {
+        setToken(session.access_token);
+        await fetchUserProfile(session.access_token);
+      }
+      if (mounted) {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        setToken(session.access_token);
+        await fetchUserProfile(session.access_token);
+      } else {
+        setToken(null);
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = (userData: User, authToken: string) => {
     setUser(userData);
     setToken(authToken);
-    localStorage.setItem('token', authToken);
-    localStorage.setItem('user', JSON.stringify(userData));
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
     setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
   };
 
   if (isLoading) {
-    return null; // Or a loading spinner
+    return <div className="min-h-screen flex items-center justify-center bg-slate-900"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div></div>;
   }
 
   return (

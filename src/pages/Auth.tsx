@@ -6,19 +6,20 @@ import * as z from "zod";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
+import { supabase } from "@/lib/supabase";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
   CardTitle,
   CardFooter
 } from "@/components/ui/card";
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
 } from "@/components/ui/tabs";
 import {
   Form,
@@ -33,12 +34,12 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Mail, Lock, User, Phone } from "lucide-react";
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$/, "Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 const registerSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$/, "Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   firstName: z.string().min(2, "First name is too short"),
   lastName: z.string().min(2, "Last name is too short"),
@@ -72,23 +73,17 @@ const Auth = () => {
   const onLogin = async (values: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        toast.success("Login successful!");
-        login(data.user, data.token);
-        navigate("/");
-      } else {
-        const error = await response.text();
-        toast.error(error || "Login failed");
-      }
-    } catch (error) {
-      toast.error("Could not connect to server");
+      if (error) throw error;
+
+      toast.success("Login successful!");
+      navigate("/");
+    } catch (error: any) {
+      toast.error(error.message || "Could not connect to server");
     } finally {
       setIsLoading(false);
     }
@@ -97,24 +92,25 @@ const Auth = () => {
   const onRegister = async (values: z.infer<typeof registerSchema>) => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...values,
-          role: "USER" // Default role
-        }),
+      const { data, error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          data: {
+            first_name: values.firstName,
+            last_name: values.lastName,
+            phone_number: values.phoneNumber,
+            role: "USER"
+          }
+        }
       });
 
-      if (response.ok) {
-        toast.success("Registration successful! Please login.");
-        registerForm.reset();
-      } else {
-        const error = await response.text();
-        toast.error(error || "Registration failed");
-      }
-    } catch (error) {
-      toast.error("Could not connect to server");
+      if (error) throw error;
+
+      toast.success("Registration successful! Please login.");
+      registerForm.reset();
+    } catch (error: any) {
+      toast.error(error.message || "Could not connect to server");
     } finally {
       setIsLoading(false);
     }
@@ -159,10 +155,10 @@ const Auth = () => {
                           <FormControl>
                             <div className="relative">
                               <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
-                              <Input 
-                                placeholder="name@example.com" 
-                                className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600" 
-                                {...field} 
+                              <Input
+                                placeholder="name@example.com"
+                                className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600"
+                                {...field}
                               />
                             </div>
                           </FormControl>
@@ -179,11 +175,11 @@ const Auth = () => {
                           <FormControl>
                             <div className="relative">
                               <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
-                              <Input 
-                                type="password" 
-                                placeholder="••••••••" 
-                                className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600" 
-                                {...field} 
+                              <Input
+                                type="password"
+                                placeholder="••••••••"
+                                className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600"
+                                {...field}
                               />
                             </div>
                           </FormControl>
@@ -191,9 +187,9 @@ const Auth = () => {
                         </FormItem>
                       )}
                     />
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-indigo-600 hover:bg-indigo-500 text-white h-11" 
+                    <Button
+                      type="submit"
+                      className="w-full bg-indigo-600 hover:bg-indigo-500 text-white h-11"
                       disabled={isLoading}
                     >
                       {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -231,10 +227,10 @@ const Auth = () => {
                             <FormControl>
                               <div className="relative">
                                 <User className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
-                                <Input 
-                                  placeholder="John" 
-                                  className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600" 
-                                  {...field} 
+                                <Input
+                                  placeholder="John"
+                                  className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600"
+                                  {...field}
                                 />
                               </div>
                             </FormControl>
@@ -251,10 +247,10 @@ const Auth = () => {
                             <FormControl>
                               <div className="relative">
                                 <User className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
-                                <Input 
-                                  placeholder="Doe" 
-                                  className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600" 
-                                  {...field} 
+                                <Input
+                                  placeholder="Doe"
+                                  className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600"
+                                  {...field}
                                 />
                               </div>
                             </FormControl>
@@ -272,10 +268,10 @@ const Auth = () => {
                           <FormControl>
                             <div className="relative">
                               <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
-                              <Input 
-                                placeholder="name@example.com" 
-                                className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600" 
-                                {...field} 
+                              <Input
+                                placeholder="name@example.com"
+                                className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600"
+                                {...field}
                               />
                             </div>
                           </FormControl>
@@ -292,10 +288,10 @@ const Auth = () => {
                           <FormControl>
                             <div className="relative">
                               <Phone className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
-                              <Input 
-                                placeholder="+123456789" 
-                                className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600" 
-                                {...field} 
+                              <Input
+                                placeholder="+123456789"
+                                className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600"
+                                {...field}
                               />
                             </div>
                           </FormControl>
@@ -312,11 +308,11 @@ const Auth = () => {
                           <FormControl>
                             <div className="relative">
                               <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
-                              <Input 
-                                type="password" 
-                                placeholder="••••••••" 
-                                className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600" 
-                                {...field} 
+                              <Input
+                                type="password"
+                                placeholder="••••••••"
+                                className="pl-10 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-600"
+                                {...field}
                               />
                             </div>
                           </FormControl>
@@ -324,9 +320,9 @@ const Auth = () => {
                         </FormItem>
                       )}
                     />
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-indigo-600 hover:bg-indigo-500 text-white h-11" 
+                    <Button
+                      type="submit"
+                      className="w-full bg-indigo-600 hover:bg-indigo-500 text-white h-11"
                       disabled={isLoading}
                     >
                       {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
