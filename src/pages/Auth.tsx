@@ -100,7 +100,7 @@ const Auth = () => {
             first_name: values.firstName,
             last_name: values.lastName,
             phone_number: values.phoneNumber,
-            role: "USER"
+            role: "CANDIDATE"
           }
         }
       });
