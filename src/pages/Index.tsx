@@ -331,7 +331,7 @@ const Index = () => {
       </section>
 
       {/* Introduction Section */}
-      <section className="py-20 bg-gradient-subtle">
+      <section id="gioi-thieu" className="py-20 bg-gradient-subtle">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -371,7 +371,7 @@ const Index = () => {
       </section>
 
       {/* Objectives Section */}
-      <section className="py-20">
+      <section id="muc-tieu" className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <Badge className="mb-4 text-base px-4 py-2">
@@ -411,7 +411,7 @@ const Index = () => {
       </section>
 
       {/* Target Audience Section */}
-      <section className="py-20 bg-secondary/30">
+      <section id="doi-tuong" className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <Badge className="mb-4 text-base px-4 py-2">
@@ -443,7 +443,7 @@ const Index = () => {
       </section>
 
       {/* Format Section */}
-      <section className="py-10">
+      <section  className="py-10">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <Badge className="mb-4 text-base px-4 py-2">
@@ -541,7 +541,7 @@ const Index = () => {
       </section>
 
       {/* Timeline Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section id="lo-trinh" className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <Badge className="mb-4 text-base px-4 py-2 bg-primary text-primary-foreground">
@@ -610,14 +610,14 @@ const Index = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+      <section id="quyen-loi" className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <Badge className="mb-6 text-lg px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
               <Award className="h-5 w-5 mr-2" />
               Quyền lợi sinh viên
             </Badge>
-            <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <h2 className="text-5xl font-bold mb-12 leading-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Những giá trị bạn nhận được
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto">
@@ -741,8 +741,8 @@ const Index = () => {
       </section>
 
       {/* Partners Section */}
-      <section className="py-10 bg-white dark:bg-gray-900">
-        <div className="container px-4">
+      <section id="doi-tac" className="py-10 bg-white dark:bg-gray-900">
+        <div className="container mx-auto px-4">
           {/* Stats Section */}
           <motion.div
             className="text-center mb-4"
