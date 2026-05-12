@@ -16,6 +16,7 @@ import {
   Mail,
   Phone,
   Shield,
+  Lock,
   Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +35,12 @@ const Profile = () => {
     lastName: user?.lastName || "",
     phoneNumber: user?.phoneNumber || "",
   });
+
+  const [passwordData, setPasswordData] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   if (!user || !token) {
     navigate("/auth");
@@ -132,6 +139,37 @@ const Profile = () => {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (passwordData.newPassword.length < 6) {
+      toast({ title: "Lỗi", description: "Mật khẩu phải có ít nhất 6 ký tự", variant: "destructive" });
+      return;
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({ title: "Lỗi", description: "Mật khẩu xác nhận không khớp", variant: "destructive" });
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword,
+      });
+
+      if (error) throw error;
+
+      setPasswordData({ newPassword: "", confirmPassword: "" });
+      toast({ title: "Thành công", description: "Đã đổi mật khẩu" });
+    } catch (err: any) {
+      toast({
+        title: "Lỗi",
+        description: err.message || "Không thể đổi mật khẩu",
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -283,6 +321,49 @@ const Profile = () => {
                 <Input value={user.phoneNumber || "—"} disabled className="bg-muted/50" />
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Password change card */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              Đổi mật khẩu
+            </CardTitle>
+          </CardHeader>
+          <Separator />
+          <CardContent className="space-y-4 pt-6">
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Mật khẩu mới</Label>
+              <Input
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground">Xác nhận mật khẩu mới</Label>
+              <Input
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                placeholder="Nhập lại mật khẩu mới"
+              />
+            </div>
+            <Button
+              onClick={handleChangePassword}
+              disabled={isChangingPassword || !passwordData.newPassword}
+              className="w-full sm:w-auto"
+            >
+              {isChangingPassword ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Lock className="mr-2 h-4 w-4" />
+              )}
+              Đổi mật khẩu
+            </Button>
           </CardContent>
         </Card>
       </div>
