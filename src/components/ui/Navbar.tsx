@@ -58,7 +58,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <div className="flex items-center gap-2">
+                <Link to="/profile" className="flex items-center gap-2 rounded-full transition hover:opacity-80">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user?.avatarUrl} />
                     <AvatarFallback>
@@ -71,7 +71,7 @@ const Navbar = () => {
                   <span className="text-sm">
                     {user?.firstName}
                   </span>
-                </div>
+                </Link>
 
                 <Button variant="outline" size="sm" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-1" />
@@ -124,9 +124,15 @@ const Navbar = () => {
                   <div className="border-t pt-4">
                     {isAuthenticated ? (
                       <>
-                        <p className="mb-2 text-sm">
-                          {user?.firstName}
-                        </p>
+                        <Link to="/profile" className="flex items-center gap-2 mb-2 rounded-md p-2 hover:bg-muted transition">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user?.avatarUrl} />
+                            <AvatarFallback>
+                              {user?.firstName?.charAt(0) || <UserIcon className="h-4 w-4" />}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm font-medium">{user?.firstName}</span>
+                        </Link>
                         <Button
                           onClick={handleLogout}
                           className="w-full"
