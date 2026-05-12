@@ -1,15 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { authApi, type ApiUser } from '../lib/api';
 
-interface User {
-  id: string | number; // Supabase ID is string, backend ID might be number/string
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  avatarUrl?: string;
-  phoneNumber?: string;
-}
+type User = ApiUser;
 
 interface AuthContextType {
   user: User | null;
@@ -29,17 +22,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (accessToken: string) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
-      });
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      } else {
-        setUser(null);
-      }
+      const userData = await authApi.getMe(accessToken);
+      setUser(userData);
     } catch (error) {
       console.error('Error fetching user profile:', error);
       setUser(null);

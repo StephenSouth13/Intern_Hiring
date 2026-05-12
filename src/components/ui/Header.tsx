@@ -11,12 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSiteContent } from "@/lib/site-content";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const Header = () => {
-  const { siteContent } = useSiteContent();
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -78,10 +76,10 @@ const navItems = [
             </DropdownMenu>
           ) : (
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => navigate("/user-login")}>
+              <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
                 Đăng nhập
               </Button>
-              <Button variant="cta" size="sm" onClick={() => navigate("/register")}>
+              <Button variant="cta" size="sm" onClick={() => navigate("/auth")}>
                 Đăng ký
               </Button>
             </div>
@@ -129,14 +127,14 @@ const navItems = [
                   <Button 
                     variant="outline" 
                     className="w-full"
-                    onClick={() => navigate("/user-login")}
+                    onClick={() => navigate("/auth")}
                   >
                     Đăng nhập
                   </Button>
                   <Button 
                     variant="cta" 
                     className="w-full"
-                    onClick={() => navigate("/register")}
+                    onClick={() => navigate("/auth")}
                   >
                     Đăng ký
                   </Button>

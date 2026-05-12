@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { userApi } from "@/lib/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,16 +90,7 @@ const Profile = () => {
       const avatarUrl = `${publicUrl}?t=${Date.now()}`;
 
       // Update backend
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/me`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ avatarUrl }),
-      });
-
-      if (!res.ok) throw new Error("Failed to update avatar");
+      await userApi.updateProfile(token, { avatarUrl });
 
       await refreshUser();
       toast({ title: "Thành công", description: "Đã cập nhật ảnh đại diện" });
@@ -117,16 +109,7 @@ const Profile = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/users/me`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) throw new Error("Failed to update profile");
+      await userApi.updateProfile(token, formData);
 
       await refreshUser();
       setIsEditing(false);

@@ -1,5 +1,5 @@
 export const API_BASE_URL =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:3000";
 
 type RequestOptions = RequestInit & {
   params?: Record<string, string | number | boolean | undefined | null>;
@@ -46,17 +46,43 @@ export async function apiRequest<T>(
   return response.json() as Promise<T>;
 }
 
-export type SiteSettings = {
-  heroTitle: string;
-  heroDescription: string;
-  ctaLabel: string;
+// ── Auth headers helper ──────────────────────────────────────────────
+function authHeaders(token: string) {
+  return { Authorization: `Bearer ${token}` };
+}
+
+// ── User type shared across API consumers ────────────────────────────
+export type ApiUser = {
+  id: string | number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  avatarUrl?: string;
+  phoneNumber?: string;
 };
 
-export const siteApi = {
-  getSettings: () => apiRequest<SiteSettings>("/site-settings"),
-  updateSettings: (payload: Partial<SiteSettings>) =>
-    apiRequest<SiteSettings>("/site-settings", {
+export type UpdateProfilePayload = {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  avatarUrl?: string;
+};
+
+// ── Auth API ─────────────────────────────────────────────────────────
+export const authApi = {
+  getMe: (token: string) =>
+    apiRequest<ApiUser>("/api/auth/me", {
+      headers: authHeaders(token),
+    }),
+};
+
+// ── User API ─────────────────────────────────────────────────────────
+export const userApi = {
+  updateProfile: (token: string, data: UpdateProfilePayload) =>
+    apiRequest<ApiUser>("/api/users/me", {
       method: "PUT",
-      body: JSON.stringify(payload),
+      headers: authHeaders(token),
+      body: JSON.stringify(data),
     }),
 };
