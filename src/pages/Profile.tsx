@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { AvatarCropDialog } from "@/components/AvatarCropDialog";
 import {
   ArrowLeft,
   Camera,
@@ -33,6 +34,8 @@ const Profile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [isCropDialogOpen, setIsCropDialogOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState("");
   const [formData, setFormData] = useState({
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
@@ -80,10 +83,10 @@ const Profile = () => {
       const ext = file.name.split('.').pop();
       const filePath = `${supaUser.id}/resume.${ext}`;
 
-      const { error: uploadError } = await supabase.storage.from('resumes').upload(filePath, file, { upsert: true });
+      const { error: uploadError } = await supabase.storage.from('cv').upload(filePath, file, { upsert: true });
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from('resumes').getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage.from('cv').getPublicUrl(filePath);
       const cvUrl = `${publicUrl}?t=${Date.now()}`;
 
       await userApi.updateProfile(token, { cvUrl });
@@ -110,32 +113,18 @@ const Profile = () => {
     uploadResumeFile(file);
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file
-    if (!file.type.startsWith("image/")) {
-      toast({ title: "Lỗi", description: "Chỉ chấp nhận file ảnh", variant: "destructive" });
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "Lỗi", description: "File không được vượt quá 5MB", variant: "destructive" });
-      return;
-    }
-
+  const uploadAvatarBlob = async (blob: Blob) => {
     setIsUploading(true);
     try {
       const { data: { user: supaUser } } = await supabase.auth.getUser();
       if (!supaUser) throw new Error("Not authenticated");
 
-      const ext = file.name.split(".").pop();
-      const filePath = `${supaUser.id}/avatar.${ext}`;
+      const filePath = `${supaUser.id}/avatar.jpg`;
 
-      // Upload to Supabase Storage
+      // Upload blob to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, blob, { upsert: true });
 
       if (uploadError) throw uploadError;
 
@@ -151,6 +140,8 @@ const Profile = () => {
       await userApi.updateProfile(token, { avatarUrl });
 
       await refreshUser();
+      setIsCropDialogOpen(false);
+      setCropImageSrc("");
       toast({ title: "Thành công", description: "Đã cập nhật ảnh đại diện" });
     } catch (err: any) {
       console.error("Avatar upload failed:", err);
@@ -162,6 +153,30 @@ const Profile = () => {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Lỗi", description: "Chỉ chấp nhận file ảnh", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Lỗi", description: "File không được vượt quá 5MB", variant: "destructive" });
+      return;
+    }
+
+    // Create blob URL and open crop dialog
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imageSrc = event.target?.result as string;
+      setCropImageSrc(imageSrc);
+      setIsCropDialogOpen(true);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSave = async () => {
@@ -465,6 +480,18 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Avatar Crop Dialog */}
+      <AvatarCropDialog
+        open={isCropDialogOpen}
+        imageSrc={cropImageSrc}
+        onCropConfirm={uploadAvatarBlob}
+        onCancel={() => {
+          setIsCropDialogOpen(false);
+          setCropImageSrc("");
+        }}
+        isLoading={isUploading}
+      />
     </main>
   );
 };

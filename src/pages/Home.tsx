@@ -69,7 +69,7 @@ const Home: React.FC = () => {
                             <div className="flex-1">
                                 <input
                                     aria-label="Tìm kiếm công việc"
-                                    className="w-full h-12 px-4 rounded-md border"
+                                    className="w-full h-12 px-4 rounded-md border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                                     placeholder="Ví dụ: Frontend, Data, Sales..."
                                 />
                             </div>
@@ -130,9 +130,14 @@ const Home: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mt-8">
                         {corporatePartners.map((p) => (
-                            <div key={p.id} className="flex items-center justify-center p-4 bg-card rounded-lg shadow-sm">
+                            <motion.div
+                                key={p.id}
+                                className="flex items-center justify-center p-4 bg-card rounded-lg shadow-sm hover:shadow-lg cursor-pointer"
+                                whileHover={{ scale: 1.1 }}
+                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                            >
                                 <img src={p.logo} alt={p.name} className="max-h-12 object-contain" loading="lazy" />
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 </div>

@@ -10,6 +10,12 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -76,27 +82,33 @@ const Navbar = () => {
           {/* DESKTOP AUTH */}
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
-              <>
-                <Link to="/profile" className="flex items-center gap-2 rounded-full transition hover:opacity-80">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.avatarUrl} />
-                    <AvatarFallback>
-                      {user?.firstName?.charAt(0) || (
-                        <UserIcon className="h-4 w-4" />
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 rounded-full transition hover:opacity-80 cursor-pointer focus:outline-none focus-visible:outline-none">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.avatarUrl} />
+                      <AvatarFallback>
+                        {user?.firstName?.charAt(0) || (
+                          <UserIcon className="h-4 w-4" />
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
 
-                  <span className="text-sm">
-                    {user?.firstName}
-                  </span>
-                </Link>
-
-                <Button variant="outline" size="sm" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-1" />
-                  Đăng xuất
-                </Button>
-              </>
+                    <span className="text-sm">
+                      {user?.firstName}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">Hồ sơ</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Đăng xuất
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <Button

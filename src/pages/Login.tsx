@@ -6,6 +6,7 @@ import * as z from "zod";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import ResetPasswordDialog from "@/components/ResetPasswordDialog";
 import {
   Card,
   CardContent,
@@ -25,7 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
 
 const loginSchema = z.object({
   email: z
@@ -36,6 +37,8 @@ const loginSchema = z.object({
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isResetOpen, setIsResetOpen] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -141,17 +144,39 @@ const Login = () => {
                           <div className="relative">
                             <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input
-                              type="password"
+                              type={showPassword ? "text" : "password"}
                               placeholder="Nhập mật khẩu"
-                              className="h-10 pl-10"
+                              className="h-10 pl-10 pr-10"
                               {...field}
                             />
+                            <button
+                              type="button"
+                              aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-primary"
+                              onClick={() => setShowPassword((current) => !current)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
                           </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  <div className="flex justify-end -mt-1 -mb-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsResetOpen(true)}
+                      className="text-sm text-primary hover:underline"
+                    >
+                      Quên mật khẩu?
+                    </button>
+                  </div>
+
                   <Button
                     type="submit"
                     variant="cta"
@@ -179,6 +204,8 @@ const Login = () => {
           </Card>
         </motion.div>
       </div>
+      <ResetPasswordDialog open={isResetOpen} onOpenChange={setIsResetOpen} />
+
     </main>
   );
 };
