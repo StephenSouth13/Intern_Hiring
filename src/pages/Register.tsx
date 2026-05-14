@@ -25,7 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, GraduationCap, Loader2, Lock, Mail, Phone, User } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, GraduationCap, Loader2, Lock, Mail, Phone, User } from "lucide-react";
 
 const registerSchema = z.object({
   email: z
@@ -39,6 +39,7 @@ const registerSchema = z.object({
 
 const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof registerSchema>>({
@@ -211,11 +212,23 @@ const Register = () => {
                           <div className="relative">
                             <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
-                              type="password"
+                              type={showPassword ? "text" : "password"}
                               placeholder="Tối thiểu 6 ký tự"
-                              className="h-9 pl-10"
+                              className="h-9 pl-10 pr-10"
                               {...field}
                             />
+                            <button
+                              type="button"
+                              aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-primary"
+                              onClick={() => setShowPassword((current) => !current)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
                           </div>
                         </FormControl>
                         <FormMessage />
