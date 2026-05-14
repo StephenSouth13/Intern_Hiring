@@ -83,10 +83,10 @@ const Profile = () => {
       const ext = file.name.split('.').pop();
       const filePath = `${supaUser.id}/resume.${ext}`;
 
-      const { error: uploadError } = await supabase.storage.from('resumes').upload(filePath, file, { upsert: true });
+      const { error: uploadError } = await supabase.storage.from('cv').upload(filePath, file, { upsert: true });
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from('resumes').getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage.from('cv').getPublicUrl(filePath);
       const cvUrl = `${publicUrl}?t=${Date.now()}`;
 
       await userApi.updateProfile(token, { cvUrl });
