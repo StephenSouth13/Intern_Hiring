@@ -18,7 +18,7 @@ const UserProtectedRoute = ({ children }: UserProtectedRouteProps) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
   return children;

@@ -76,10 +76,10 @@ const navItems = [
             </DropdownMenu>
           ) : (
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
+              <Button variant="cta" size="sm" className="bg-primary text-primary-foreground hover:bg-primary-dark" onClick={() => navigate("/login")}>
                 Đăng nhập
               </Button>
-              <Button variant="cta" size="sm" onClick={() => navigate("/auth")}>
+              <Button variant="outline" size="sm" className="border-primary bg-white text-primary hover:bg-primary/10 hover:text-primary" onClick={() => navigate("/register")}>
                 Đăng ký
               </Button>
             </div>
@@ -125,16 +125,16 @@ const navItems = [
               ) : (
                 <div className="mt-6 space-y-2 border-t pt-4">
                   <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => navigate("/auth")}
+                    variant="cta" 
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary-dark"
+                    onClick={() => navigate("/login")}
                   >
                     Đăng nhập
                   </Button>
                   <Button 
-                    variant="cta" 
-                    className="w-full"
-                    onClick={() => navigate("/auth")}
+                    variant="outline" 
+                    className="w-full border-primary bg-white text-primary hover:bg-primary/10 hover:text-primary"
+                    onClick={() => navigate("/register")}
                   >
                     Đăng ký
                   </Button>

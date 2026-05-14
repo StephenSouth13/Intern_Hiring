@@ -45,11 +45,23 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Link to="/auth">
-                  <Button variant="ghost" size="sm">Đăng nhập</Button>
+                <Link to="/login">
+                  <Button
+                    variant="cta"
+                    size="sm"
+                    className="bg-primary text-primary-foreground hover:bg-primary-dark"
+                  >
+                    Đăng nhập
+                  </Button>
                 </Link>
-                <Link to="/auth">
-                  <Button size="sm">Đăng ký</Button>
+                <Link to="/register">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-primary bg-white text-primary hover:bg-primary/10 hover:text-primary"
+                  >
+                    Đăng ký
+                  </Button>
                 </Link>
               </div>
             )}

@@ -60,6 +60,8 @@ export type ApiUser = {
   role: string;
   avatarUrl?: string;
   phoneNumber?: string;
+  gender?: string;
+  resumeUrl?: string;
 };
 
 export type UpdateProfilePayload = {
@@ -67,6 +69,8 @@ export type UpdateProfilePayload = {
   lastName?: string;
   phoneNumber?: string;
   avatarUrl?: string;
+  gender?: string;
+  resumeUrl?: string;
 };
 
 // ── Auth API ─────────────────────────────────────────────────────────

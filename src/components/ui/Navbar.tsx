@@ -6,6 +6,7 @@ import { LogOut, User as UserIcon, Menu } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -20,34 +21,52 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { label: "Giới thiệu", href: "#gioi-thieu" },
-    { label: "Mục tiêu", href: "#muc-tieu" },
-    { label: "Lộ trình", href: "#lo-trinh" },
-    { label: "Quyền lợi", href: "#quyen-loi" },
-    { label: "Đối tác", href: "#doi-tac" },
+    { label: "Tìm kiếm", targetId: "tim-kiem" },
+    { label: "Việc làm", targetId: "viec-lam" },
+    { label: "Đối tác", targetId: "doi-tac" },
+    { label: "Tuyển dụng", targetId: "tuyen-dung" },
   ];
+
+  const scrollToSection = (targetId?: string) => {
+    if (window.location.pathname !== "/") {
+      navigate("/");
+    }
+
+    window.setTimeout(() => {
+      if (!targetId) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      document.getElementById(targetId)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 80);
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
       <div className="container mx-auto relative flex h-16 items-center px-4">
 
         {/* LEFT - Logo */}
-        <Link to="/" className="flex items-center">
+        <button type="button" className="flex items-center" onClick={() => scrollToSection()}>
           <span className="font-bold text-xl text-primary">
             InternHiring
           </span>
-        </Link>
+        </button>
 
         {/* CENTER - Menu (desktop) */}
-        <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-8">
+        <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-10 lg:gap-12">
           {navItems.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
+            <button
+              key={item.targetId}
+              type="button"
+              onClick={() => scrollToSection(item.targetId)}
               className="text-sm font-semibold text-black hover:text-primary transition"
             >
               {item.label}
-            </a>
+            </button>
           ))}
         </div>
 
@@ -81,15 +100,18 @@ const Navbar = () => {
             ) : (
               <>
                 <Button
-                  variant="ghost"
+                  variant="cta"
                   size="sm"
-                  onClick={() => navigate("/auth")}
+                  className="bg-primary text-primary-foreground hover:bg-primary-dark"
+                  onClick={() => navigate("/login")}
                 >
                   Đăng nhập
                 </Button>
                 <Button
+                  variant="outline"
                   size="sm"
-                  onClick={() => navigate("/auth")}
+                  className="border-primary bg-white text-primary hover:bg-primary/10 hover:text-primary"
+                  onClick={() => navigate("/register")}
                 >
                   Đăng ký
                 </Button>
@@ -111,13 +133,15 @@ const Navbar = () => {
 
                   {/* MENU ITEMS */}
                   {navItems.map((item) => (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      className="text-base font-semibold"
-                    >
-                      {item.label}
-                    </a>
+                    <SheetClose asChild key={item.targetId}>
+                      <button
+                        type="button"
+                        onClick={() => scrollToSection(item.targetId)}
+                        className="text-left text-base font-semibold"
+                      >
+                        {item.label}
+                      </button>
+                    </SheetClose>
                   ))}
 
                   {/* AUTH */}
@@ -143,15 +167,16 @@ const Navbar = () => {
                     ) : (
                       <>
                         <Button
-                          variant="outline"
-                          className="w-full mb-2"
-                          onClick={() => navigate("/auth")}
+                          variant="cta"
+                          className="w-full mb-2 bg-primary text-primary-foreground hover:bg-primary-dark"
+                          onClick={() => navigate("/login")}
                         >
                           Đăng nhập
                         </Button>
                         <Button
-                          className="w-full"
-                          onClick={() => navigate("/auth")}
+                          variant="outline"
+                          className="w-full border-primary bg-white text-primary hover:bg-primary/10 hover:text-primary"
+                          onClick={() => navigate("/register")}
                         >
                           Đăng ký
                         </Button>

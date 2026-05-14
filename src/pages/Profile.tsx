@@ -27,14 +27,17 @@ const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resumeInputRef = useRef<HTMLInputElement>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
   const [formData, setFormData] = useState({
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
     phoneNumber: user?.phoneNumber || "",
+    gender: (user as any)?.gender || "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -44,12 +47,67 @@ const Profile = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   if (!user || !token) {
-    navigate("/auth");
+    navigate("/login");
     return null;
   }
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleResumeClick = () => {
+    resumeInputRef.current?.click();
+  };
+
+  const uploadResumeFile = async (file: File) => {
+    if (!file) return;
+    // accept pdf/doc/docx
+    const allowed = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (!allowed.includes(file.type)) {
+      toast({ title: "Lỗi", description: "Chỉ chấp nhận PDF/DOC/DOCX", variant: "destructive" });
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Lỗi", description: "File không được vượt quá 10MB", variant: "destructive" });
+      return;
+    }
+
+    setIsUploadingResume(true);
+    try {
+      const { data: { user: supaUser } } = await supabase.auth.getUser();
+      if (!supaUser) throw new Error("Not authenticated");
+
+      const ext = file.name.split('.').pop();
+      const filePath = `${supaUser.id}/resume.${ext}`;
+
+      const { error: uploadError } = await supabase.storage.from('resumes').upload(filePath, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('resumes').getPublicUrl(filePath);
+      const resumeUrl = `${publicUrl}?t=${Date.now()}`;
+
+      await userApi.updateProfile(token, { resumeUrl } as any);
+      await refreshUser();
+      toast({ title: 'Thành công', description: 'Đã tải lên CV' });
+    } catch (err: any) {
+      console.error('Resume upload failed:', err);
+      toast({ title: 'Lỗi', description: err.message || 'Không thể tải CV lên', variant: 'destructive' });
+    } finally {
+      setIsUploadingResume(false);
+    }
+  };
+
+  const handleResumeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadResumeFile(file);
+  };
+
+  const handleResumeDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    uploadResumeFile(file);
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,200 +215,257 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <div className="container mx-auto max-w-2xl px-4 py-8">
-        {/* Back button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(-1)}
-          className="mb-6 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Quay lại
-        </Button>
-
-        {/* Avatar card */}
-        <Card className="mb-6 overflow-hidden">
-          <div className="h-32 bg-gradient-to-r from-primary/80 to-primary" />
-          <div className="relative px-6 pb-6">
-            <div className="relative -mt-16 mb-4 w-fit">
-              <Avatar className="h-28 w-28 border-4 border-white shadow-lg">
-                <AvatarImage src={user.avatarUrl} alt={user.firstName} />
-                <AvatarFallback className="bg-primary/10 text-primary text-3xl">
-                  {user.firstName?.charAt(0) || <UserIcon className="h-10 w-10" />}
-                </AvatarFallback>
-              </Avatar>
-              <button
-                onClick={handleAvatarClick}
-                disabled={isUploading}
-                className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white shadow-md transition-transform hover:scale-110 disabled:opacity-50"
-              >
-                {isUploading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Camera className="h-4 w-4" />
-                )}
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                className="hidden"
-              />
-            </div>
-
-            <h2 className="text-2xl font-bold">
-              {user.lastName} {user.firstName}
-            </h2>
-            <p className="text-muted-foreground">{user.email}</p>
-            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              <Shield className="h-3 w-3" />
-              {user.role}
-            </div>
-          </div>
-        </Card>
-
-        {/* Info card */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">Thông tin cá nhân</CardTitle>
-            {!isEditing ? (
-              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                Chỉnh sửa
-              </Button>
-            ) : (
-              <div className="flex gap-2">
+    <main className="h-[calc(100dvh-4rem)] overflow-hidden bg-gradient-to-b from-slate-50 to-white">
+      <div className="container mx-auto flex h-full items-start justify-center px-4 py-4">
+        <div className="w-full max-w-5xl overflow-hidden">
+          <div className="grid grid-rows-[auto_auto] gap-6">
+            {/* TOP ROW: back button, avatar, personal info */}
+            <div className="grid md:grid-cols-[48px_320px_1fr] gap-6 items-stretch">
+              {/* LEFT - small column for back button */}
+              <div className="flex items-start">
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setIsEditing(false);
-                    setFormData({
-                      firstName: user.firstName || "",
-                      lastName: user.lastName || "",
-                      phoneNumber: user.phoneNumber || "",
-                    });
-                  }}
+                  size="icon"
+                  onClick={() => navigate(-1)}
+                  className="text-muted-foreground"
+                  aria-label="Quay lại"
                 >
-                  Hủy
-                </Button>
-                <Button size="sm" onClick={handleSave} disabled={isSaving}>
-                  {isSaving ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="mr-2 h-4 w-4" />
-                  )}
-                  Lưu
+                  <ArrowLeft className="h-4 w-4" />
                 </Button>
               </div>
-            )}
-          </CardHeader>
-          <Separator />
-          <CardContent className="space-y-6 pt-6">
-            {/* Email (read-only) */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="h-4 w-4" /> Email
-              </Label>
-              <Input value={user.email} disabled className="bg-muted/50" />
+
+              {/* MIDDLE - avatar card */}
+              <div className="flex flex-col gap-4 h-full">
+                <Card className="overflow-hidden h-full">
+                  <div className="h-28 bg-gradient-to-r from-primary/80 to-primary" />
+                  <div className="relative px-4 pb-4 flex flex-col items-center h-full justify-start">
+                    <div className="relative -mt-12 mb-3">
+                      <Avatar className="h-24 w-24 border-4 border-white shadow bg-white">
+                        <AvatarImage src={user.avatarUrl} alt={user.firstName} />
+                        <AvatarFallback className="text-primary text-3xl">
+                          {user.firstName?.charAt(0) || <UserIcon className="h-8 w-8" />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <button
+                        onClick={handleAvatarClick}
+                        disabled={isUploading}
+                        className="absolute -right-1 bottom-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow transition-transform hover:scale-110 disabled:opacity-50"
+                      >
+                        {isUploading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Camera className="h-4 w-4" />
+                        )}
+                      </button>
+                      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                    </div>
+
+                    <h3 className="text-lg font-bold text-center">
+                      {user.lastName} {user.firstName}
+                    </h3>
+                    <p className="text-sm text-muted-foreground text-center">{user.email}</p>
+                    <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                      <Shield className="h-3 w-3" />
+                      {user.role}
+                    </div>
+                  </div>
+                </Card>
+                {/* CV card moved to bottom row to avoid enlarging top row */}
+              </div>
+
+              {/* RIGHT - personal info card */}
+              <div className="flex flex-col gap-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-lg">Thông tin cá nhân</CardTitle>
+                    {!isEditing ? (
+                      <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                        Chỉnh sửa
+                      </Button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setIsEditing(false);
+                            setFormData({
+                              firstName: user.firstName || "",
+                              lastName: user.lastName || "",
+                              phoneNumber: user.phoneNumber || "",
+                              gender: (user as any).gender || "",
+                            });
+                          }}
+                        >
+                          Hủy
+                        </Button>
+                        <Button size="sm" onClick={handleSave} disabled={isSaving}>
+                          {isSaving ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Save className="mr-2 h-4 w-4" />
+                          )}
+                          Lưu
+                        </Button>
+                      </div>
+                    )}
+                  </CardHeader>
+                  <Separator />
+                  <CardContent className="space-y-4 p-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="flex items-center gap-2 text-muted-foreground">
+                          <UserIcon className="h-4 w-4" /> Họ
+                        </Label>
+                        {isEditing ? (
+                          <Input
+                            value={formData.lastName}
+                            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                            placeholder="Nhập họ"
+                          />
+                        ) : (
+                          <Input value={user.lastName || "—"} disabled className="bg-muted/50" />
+                        )}
+                      </div>
+
+                      <div>
+                        <Label className="flex items-center gap-2 text-muted-foreground">
+                          <UserIcon className="h-4 w-4" /> Tên
+                        </Label>
+                        {isEditing ? (
+                          <Input
+                            value={formData.firstName}
+                            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                            placeholder="Nhập tên"
+                          />
+                        ) : (
+                          <Input value={user.firstName || "—"} disabled className="bg-muted/50" />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="flex items-center gap-2 text-muted-foreground">
+                          <Phone className="h-4 w-4" /> Số điện thoại
+                        </Label>
+                        {isEditing ? (
+                          <Input
+                            value={formData.phoneNumber}
+                            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                            placeholder="Nhập số điện thoại"
+                          />
+                        ) : (
+                          <Input value={user.phoneNumber || "—"} disabled className="bg-muted/50" />
+                        )}
+                      </div>
+
+                      <div>
+                        <Label className="flex items-center gap-2 text-muted-foreground">Giới tính</Label>
+                        {isEditing ? (
+                          <select
+                            value={formData.gender}
+                            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base"
+                          >
+                            <option value="">Chọn</option>
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                            <option value="Khác">Khác</option>
+                          </select>
+                        ) : (
+                          <Input value={(user as any).gender || "—"} disabled className="bg-muted/50" />
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="flex items-center gap-2 text-muted-foreground">
+                        <Mail className="h-4 w-4" /> Email
+                      </Label>
+                      <Input value={user.email} disabled className="bg-muted/50" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
-            {/* Last name */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-muted-foreground">
-                <UserIcon className="h-4 w-4" /> Họ
-              </Label>
-              {isEditing ? (
-                <Input
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  placeholder="Nhập họ"
-                />
-              ) : (
-                <Input value={user.lastName || "—"} disabled className="bg-muted/50" />
-              )}
-            </div>
+            {/* BOTTOM ROW: password change (aligned to right column) */}
+            <div className="grid md:grid-cols-[48px_320px_1fr] gap-6">
+              <div />
+              <div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">CV</CardTitle>
+                  </CardHeader>
+                  <Separator />
+                  <CardContent className="p-4">
+                    <div
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={handleResumeDrop}
+                      onClick={handleResumeClick}
+                      className="min-h-[80px] flex items-center justify-center rounded-md border border-dashed border-muted/50 bg-muted/5 px-3 py-6 text-sm text-muted-foreground cursor-pointer"
+                    >
+                      {isUploadingResume ? (
+                        <div>Đang tải lên...</div>
+                      ) : (user as any)?.resumeUrl ? (
+                        <a href={(user as any).resumeUrl} target="_blank" rel="noreferrer" className="text-primary underline">
+                          Xem CV hiện tại
+                        </a>
+                      ) : (
+                        <div>Kéo thả file ở đây hoặc nhấn để chọn (PDF / DOC / DOCX)</div>
+                      )}
+                    </div>
+                    <input ref={resumeInputRef} type="file" accept=".pdf,.doc,.docx" onChange={handleResumeInput} className="hidden" />
+                  </CardContent>
+                </Card>
+              </div>
+              <div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Đổi mật khẩu</CardTitle>
+                  </CardHeader>
+                  <Separator />
+                  <CardContent className="space-y-4 p-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="sr-only">Mật khẩu mới</Label>
+                        <Input
+                          type="password"
+                          value={passwordData.newPassword}
+                          onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                          placeholder="Mật khẩu mới"
+                        />
+                      </div>
+                      <div>
+                        <Label className="sr-only">Xác nhận mật khẩu</Label>
+                        <Input
+                          type="password"
+                          value={passwordData.confirmPassword}
+                          onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                          placeholder="Xác nhận mật khẩu"
+                        />
+                      </div>
+                    </div>
 
-            {/* First name */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-muted-foreground">
-                <UserIcon className="h-4 w-4" /> Tên
-              </Label>
-              {isEditing ? (
-                <Input
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  placeholder="Nhập tên"
-                />
-              ) : (
-                <Input value={user.firstName || "—"} disabled className="bg-muted/50" />
-              )}
+                    <div className="flex justify-end">
+                      <Button onClick={handleChangePassword} disabled={isChangingPassword}>
+                        {isChangingPassword ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Lock className="mr-2 h-4 w-4" />
+                        )}
+                        Đổi mật khẩu
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-
-            {/* Phone */}
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="h-4 w-4" /> Số điện thoại
-              </Label>
-              {isEditing ? (
-                <Input
-                  value={formData.phoneNumber}
-                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                  placeholder="Nhập số điện thoại"
-                />
-              ) : (
-                <Input value={user.phoneNumber || "—"} disabled className="bg-muted/50" />
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Password change card */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Lock className="h-5 w-5" />
-              Đổi mật khẩu
-            </CardTitle>
-          </CardHeader>
-          <Separator />
-          <CardContent className="space-y-4 pt-6">
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">Mật khẩu mới</Label>
-              <Input
-                type="password"
-                value={passwordData.newPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">Xác nhận mật khẩu mới</Label>
-              <Input
-                type="password"
-                value={passwordData.confirmPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                placeholder="Nhập lại mật khẩu mới"
-              />
-            </div>
-            <Button
-              onClick={handleChangePassword}
-              disabled={isChangingPassword || !passwordData.newPassword}
-              className="w-full sm:w-auto"
-            >
-              {isChangingPassword ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Lock className="mr-2 h-4 w-4" />
-              )}
-              Đổi mật khẩu
-            </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
   );
 };
 
