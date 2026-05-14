@@ -61,7 +61,8 @@ export type ApiUser = {
   avatarUrl?: string;
   phoneNumber?: string;
   gender?: string;
-  resumeUrl?: string;
+  dob?: string;
+  cvUrl?: string;
 };
 
 export type UpdateProfilePayload = {
@@ -70,7 +71,8 @@ export type UpdateProfilePayload = {
   phoneNumber?: string;
   avatarUrl?: string;
   gender?: string;
-  resumeUrl?: string;
+  dob?: string;
+  cvUrl?: string;
 };
 
 // ── Auth API ─────────────────────────────────────────────────────────

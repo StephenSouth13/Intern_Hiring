@@ -40,7 +40,7 @@ const Profile = () => {
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
     phoneNumber: user?.phoneNumber || "",
-    gender: (user as any)?.gender || "",
+    gender: user?.gender || "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -87,9 +87,9 @@ const Profile = () => {
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage.from('resumes').getPublicUrl(filePath);
-      const resumeUrl = `${publicUrl}?t=${Date.now()}`;
+      const cvUrl = `${publicUrl}?t=${Date.now()}`;
 
-      await userApi.updateProfile(token, { resumeUrl } as any);
+      await userApi.updateProfile(token, { cvUrl });
       await refreshUser();
       toast({ title: 'Thành công', description: 'Đã tải lên CV' });
     } catch (err: any) {
@@ -308,7 +308,7 @@ const Profile = () => {
                               firstName: user.firstName || "",
                               lastName: user.lastName || "",
                               phoneNumber: user.phoneNumber || "",
-                              gender: (user as any).gender || "",
+                              gender: user.gender || "",
                             });
                           }}
                         >
@@ -384,12 +384,12 @@ const Profile = () => {
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base"
                           >
                             <option value="">Chọn</option>
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                            <option value="Khác">Khác</option>
+                            <option value="MALE">Nam</option>
+                            <option value="FEMALE">Nữ</option>
+                            <option value="OTHER">Khác</option>
                           </select>
                         ) : (
-                          <Input value={(user as any).gender || "—"} disabled className="bg-muted/50" />
+                          <Input value={user.gender || "—"} disabled className="bg-muted/50" />
                         )}
                       </div>
                     </div>
@@ -423,8 +423,8 @@ const Profile = () => {
                     >
                       {isUploadingResume ? (
                         <div>Đang tải lên...</div>
-                      ) : (user as any)?.resumeUrl ? (
-                        <a href={(user as any).resumeUrl} target="_blank" rel="noreferrer" className="text-primary underline">
+                      ) : user?.cvUrl ? (
+                        <a href={user.cvUrl} target="_blank" rel="noreferrer" className="text-primary underline">
                           Xem CV hiện tại
                         </a>
                       ) : (
