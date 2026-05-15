@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
+import ResetPasswordPage from "./pages/ResetPassword";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import { isAdminRole } from "./lib/roles";
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

@@ -20,49 +20,46 @@ const ResetPasswordPage: React.FC = () => {
     const { toast } = useToast();
 
     useEffect(() => {
-        const init = async () => {
-            setLoading(true);
-            setErrorMsg(null);
-            try {
-                // Try to extract session from URL using Supabase helper if available
-                let session = null as any;
+        // Check for Supabase error query params (e.g. otp_expired, access_denied)
+        const searchParams = new URLSearchParams(window.location.search);
+        const errorCode = searchParams.get("error_code");
+        const errorDescription = searchParams.get("error_description");
 
-                if (typeof (supabase.auth as any).getSessionFromUrl === "function") {
-                    // @ts-ignore
-                    const res = await (supabase.auth as any).getSessionFromUrl();
-                    session = res?.data?.session ?? res?.session ?? res?.data ?? null;
-                }
+        if (errorCode || searchParams.get("error")) {
+            const messages: Record<string, string> = {
+                otp_expired: "Liên kết đặt lại mật khẩu đã hết hạn. Vui lòng gửi lại yêu cầu mới.",
+                access_denied: "Truy cập bị từ chối. Liên kết không hợp lệ hoặc đã hết hạn.",
+            };
+            setSessionActive(false);
+            setErrorMsg(messages[errorCode ?? ""] ?? errorDescription?.replace(/\+/g, " ") ?? "Liên kết không hợp lệ. Vui lòng gửi lại yêu cầu đặt lại mật khẩu.");
+            setLoading(false);
+            return;
+        }
 
-                if (!session) {
-                    // Fallback: parse URL hash for access_token/refresh_token and set session
-                    const hash = window.location.hash;
-                    if (hash?.includes("access_token")) {
-                        const params = new URLSearchParams(hash.replace(/^#/, ""));
-                        const access_token = params.get("access_token");
-                        const refresh_token = params.get("refresh_token");
-                        if (access_token && typeof (supabase.auth as any).setSession === "function") {
-                            // @ts-ignore
-                            const setRes = await (supabase.auth as any).setSession({ access_token, refresh_token });
-                            session = setRes?.data?.session ?? setRes?.session ?? null;
-                        }
-                    }
-                }
-
-                if (session) {
-                    setSessionActive(true);
-                } else {
-                    setSessionActive(false);
-                    setErrorMsg("Không tìm thấy phiên đăng nhập từ liên kết. Vui lòng mở lại liên kết trong email hoặc gửi lại yêu cầu đặt lại mật khẩu.");
-                }
-            } catch (err: any) {
-                console.error("Error getting session from URL:", err);
-                setErrorMsg(err?.message || String(err));
-            } finally {
+        // Supabase JS v2 auto-consumes hash tokens on init.
+        // Listen for PASSWORD_RECOVERY event which fires after token exchange.
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === "PASSWORD_RECOVERY" && session) {
+                setSessionActive(true);
                 setLoading(false);
             }
-        };
+        });
 
-        init();
+        // Also check if session already exists (user may have landed with tokens already processed)
+        const checkExisting = async () => {
+            // Small delay to let Supabase process the hash tokens
+            await new Promise((r) => setTimeout(r, 1500));
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                setSessionActive(true);
+            } else if (!sessionActive) {
+                setErrorMsg("Không tìm thấy phiên đăng nhập từ liên kết. Vui lòng mở lại liên kết trong email hoặc gửi lại yêu cầu đặt lại mật khẩu.");
+            }
+            setLoading(false);
+        };
+        checkExisting();
+
+        return () => subscription.unsubscribe();
     }, []);
 
     const handleSubmit = async () => {

@@ -22,11 +22,13 @@ import {
   Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 const Profile = () => {
   const { user, token, refreshUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
 
@@ -83,10 +85,10 @@ const Profile = () => {
       const ext = file.name.split('.').pop();
       const filePath = `${supaUser.id}/resume.${ext}`;
 
-      const { error: uploadError } = await supabase.storage.from('resumes').upload(filePath, file, { upsert: true });
+      const { error: uploadError } = await supabase.storage.from('cv').upload(filePath, file, { upsert: true });
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from('resumes').getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage.from('cv').getPublicUrl(filePath);
       const cvUrl = `${publicUrl}?t=${Date.now()}`;
 
       await userApi.updateProfile(token, { cvUrl });
@@ -292,10 +294,10 @@ const Profile = () => {
               <div className="flex flex-col gap-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-lg">Thông tin cá nhân</CardTitle>
+                    <CardTitle className="text-lg">{t("profile.personal_info")}</CardTitle>
                     {!isEditing ? (
                       <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                        Chỉnh sửa
+                        {t("profile.edit")}
                       </Button>
                     ) : (
                       <div className="flex gap-2">
@@ -312,7 +314,7 @@ const Profile = () => {
                             });
                           }}
                         >
-                          Hủy
+                          {t("profile.cancel")}
                         </Button>
                         <Button size="sm" onClick={handleSave} disabled={isSaving}>
                           {isSaving ? (
@@ -320,7 +322,7 @@ const Profile = () => {
                           ) : (
                             <Save className="mr-2 h-4 w-4" />
                           )}
-                          Lưu
+                          {t("profile.save")}
                         </Button>
                       </div>
                     )}
@@ -330,7 +332,7 @@ const Profile = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label className="flex items-center gap-2 text-muted-foreground">
-                          <UserIcon className="h-4 w-4" /> Họ
+                          <UserIcon className="h-4 w-4" /> {t("profile.last_name")}
                         </Label>
                         {isEditing ? (
                           <Input
@@ -345,7 +347,7 @@ const Profile = () => {
 
                       <div>
                         <Label className="flex items-center gap-2 text-muted-foreground">
-                          <UserIcon className="h-4 w-4" /> Tên
+                          <UserIcon className="h-4 w-4" /> {t("profile.first_name")}
                         </Label>
                         {isEditing ? (
                           <Input
@@ -362,7 +364,7 @@ const Profile = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label className="flex items-center gap-2 text-muted-foreground">
-                          <Phone className="h-4 w-4" /> Số điện thoại
+                          <Phone className="h-4 w-4" /> {t("profile.phone")}
                         </Label>
                         {isEditing ? (
                           <Input
@@ -376,27 +378,31 @@ const Profile = () => {
                       </div>
 
                       <div>
-                        <Label className="flex items-center gap-2 text-muted-foreground">Giới tính</Label>
+                        <Label className="flex items-center gap-2 text-muted-foreground">{t("profile.gender_label")}</Label>
                         {isEditing ? (
                           <select
                             value={formData.gender}
                             onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base"
                           >
-                            <option value="">Chọn</option>
-                            <option value="MALE">Nam</option>
-                            <option value="FEMALE">Nữ</option>
-                            <option value="OTHER">Khác</option>
+                            <option value="">{t("profile.select")}</option>
+                            <option value="MALE">{t("gender.MALE")}</option>
+                            <option value="FEMALE">{t("gender.FEMALE")}</option>
+                            <option value="OTHER">{t("gender.OTHER")}</option>
                           </select>
                         ) : (
-                          <Input value={user.gender || "—"} disabled className="bg-muted/50" />
+                          <Input 
+                            value={user.gender ? t(`gender.${user.gender}`) : "—"} 
+                            disabled 
+                            className="bg-muted/50" 
+                          />
                         )}
                       </div>
                     </div>
 
                     <div>
                       <Label className="flex items-center gap-2 text-muted-foreground">
-                        <Mail className="h-4 w-4" /> Email
+                        <Mail className="h-4 w-4" /> {t("profile.email")}
                       </Label>
                       <Input value={user.email} disabled className="bg-muted/50" />
                     </div>
@@ -411,7 +417,7 @@ const Profile = () => {
               <div>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm">CV</CardTitle>
+                    <CardTitle className="text-sm">{t("profile.cv_title")}</CardTitle>
                   </CardHeader>
                   <Separator />
                   <CardContent className="p-4">
@@ -419,16 +425,16 @@ const Profile = () => {
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={handleResumeDrop}
                       onClick={handleResumeClick}
-                      className="min-h-[80px] flex items-center justify-center rounded-md border border-dashed border-muted/50 bg-muted/5 px-3 py-6 text-sm text-muted-foreground cursor-pointer"
+                      className="min-h-[80px] flex items-center justify-center rounded-md border border-dashed border-muted/50 bg-muted/5 px-3 py-6 text-sm text-muted-foreground cursor-pointer text-center"
                     >
                       {isUploadingResume ? (
                         <div>Đang tải lên...</div>
                       ) : user?.cvUrl ? (
                         <a href={user.cvUrl} target="_blank" rel="noreferrer" className="text-primary underline">
-                          Xem CV hiện tại
+                          {t("profile.view_cv")}
                         </a>
                       ) : (
-                        <div>Kéo thả file ở đây hoặc nhấn để chọn (PDF / DOC / DOCX)</div>
+                        <div>{t("profile.drag_drop_cv")}</div>
                       )}
                     </div>
                     <input ref={resumeInputRef} type="file" accept=".pdf,.doc,.docx" onChange={handleResumeInput} className="hidden" />
@@ -438,27 +444,27 @@ const Profile = () => {
               <div>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Đổi mật khẩu</CardTitle>
+                    <CardTitle className="text-lg">{t("profile.change_password")}</CardTitle>
                   </CardHeader>
                   <Separator />
                   <CardContent className="space-y-4 p-4">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label className="sr-only">Mật khẩu mới</Label>
+                        <Label className="sr-only">{t("profile.new_password")}</Label>
                         <Input
                           type="password"
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                          placeholder="Mật khẩu mới"
+                          placeholder={t("profile.new_password")}
                         />
                       </div>
                       <div>
-                        <Label className="sr-only">Xác nhận mật khẩu</Label>
+                        <Label className="sr-only">{t("profile.confirm_password")}</Label>
                         <Input
                           type="password"
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                          placeholder="Xác nhận mật khẩu"
+                          placeholder={t("profile.confirm_password")}
                         />
                       </div>
                     </div>
@@ -470,7 +476,7 @@ const Profile = () => {
                         ) : (
                           <Lock className="mr-2 h-4 w-4" />
                         )}
-                        Đổi mật khẩu
+                        {t("profile.change_password")}
                       </Button>
                     </div>
                   </CardContent>
