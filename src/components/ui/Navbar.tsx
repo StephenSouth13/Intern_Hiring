@@ -16,10 +16,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -27,10 +30,10 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { label: "Tìm kiếm", targetId: "tim-kiem" },
-    { label: "Việc làm", targetId: "viec-lam" },
-    { label: "Đối tác", targetId: "doi-tac" },
-    { label: "Tuyển dụng", targetId: "tuyen-dung" },
+    { label: t("nav.search"), targetId: "tim-kiem" },
+    { label: t("nav.jobs"), targetId: "viec-lam" },
+    { label: t("nav.partners"), targetId: "doi-tac" },
+    { label: t("nav.recruitment"), targetId: "tuyen-dung" },
   ];
 
   const scrollToSection = (targetId?: string) => {
@@ -78,6 +81,9 @@ const Navbar = () => {
 
         {/* RIGHT */}
         <div className="ml-auto flex items-center gap-3">
+          <div className="hidden md:flex">
+            <LanguageSwitcher />
+          </div>
 
           {/* DESKTOP AUTH */}
           <div className="hidden md:flex items-center gap-3">
@@ -101,11 +107,11 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link to="/profile">Hồ sơ</Link>
+                    <Link to="/profile">{t("nav.profile")}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="h-4 w-4 mr-2" />
-                    Đăng xuất
+                    {t("nav.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -117,7 +123,7 @@ const Navbar = () => {
                   className="bg-primary text-primary-foreground hover:bg-primary-dark"
                   onClick={() => navigate("/login")}
                 >
-                  Đăng nhập
+                  {t("nav.login")}
                 </Button>
                 <Button
                   variant="outline"
@@ -142,6 +148,7 @@ const Navbar = () => {
 
               <SheetContent side="right" className="w-64">
                 <div className="mt-6 flex flex-col gap-4">
+                  <LanguageSwitcher />
 
                   {/* MENU ITEMS */}
                   {navItems.map((item) => (

@@ -1,0 +1,39 @@
+{
+  "gender": {
+    "MALE": "Male",
+    "FEMALE": "Female",
+    "OTHER": "Other"
+  },
+  "role": {
+    "CANDIDATE": "Candidate",
+    "EMPLOYER": "Employer",
+    "ADMIN": "Admin"
+  },
+  "nav": {
+    "profile": "Profile",
+    "logout": "Log out",
+    "login": "Log in",
+    "search": "Search",
+    "jobs": "Jobs",
+    "partners": "Partners",
+    "recruitment": "Recruitment"
+  },
+  "profile": {
+    "personal_info": "Personal Information",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "last_name": "Last Name",
+    "first_name": "First Name",
+    "phone": "Phone Number",
+    "gender_label": "Gender",
+    "select": "Select",
+    "email": "Email",
+    "change_password": "Change Password",
+    "new_password": "New Password",
+    "confirm_password": "Confirm Password",
+    "cv_title": "Resume",
+    "view_cv": "View current Resume",
+    "drag_drop_cv": "Drag and drop file here or click to select (PDF / DOC / DOCX)"
+  }
+}
