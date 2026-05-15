@@ -16,10 +16,14 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { isAdminRole } from "@/lib/roles";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     logout();
@@ -27,10 +31,10 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { label: "Tìm kiếm", targetId: "tim-kiem" },
-    { label: "Việc làm", targetId: "viec-lam" },
-    { label: "Đối tác", targetId: "doi-tac" },
-    { label: "Tuyển dụng", targetId: "tuyen-dung" },
+    { label: t("nav.search"), targetId: "tim-kiem" },
+    { label: t("nav.jobs"), targetId: "viec-lam" },
+    { label: t("nav.partners"), targetId: "doi-tac" },
+    { label: t("nav.recruitment"), targetId: "tuyen-dung" },
   ];
 
   const scrollToSection = (targetId?: string) => {
@@ -78,6 +82,9 @@ const Navbar = () => {
 
         {/* RIGHT */}
         <div className="ml-auto flex items-center gap-3">
+          <div className="hidden md:flex">
+            <LanguageSwitcher />
+          </div>
 
           {/* DESKTOP AUTH */}
           <div className="hidden md:flex items-center gap-3">
@@ -100,12 +107,17 @@ const Navbar = () => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  {isAdminRole(user?.role) && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin">Quản trị viên</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
-                    <Link to="/profile">Hồ sơ</Link>
+                    <Link to="/profile">{t("nav.profile")}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="h-4 w-4 mr-2" />
-                    Đăng xuất
+                    {t("nav.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -117,7 +129,7 @@ const Navbar = () => {
                   className="bg-primary text-primary-foreground hover:bg-primary-dark"
                   onClick={() => navigate("/login")}
                 >
-                  Đăng nhập
+                  {t("nav.login")}
                 </Button>
                 <Button
                   variant="outline"
@@ -142,6 +154,7 @@ const Navbar = () => {
 
               <SheetContent side="right" className="w-64">
                 <div className="mt-6 flex flex-col gap-4">
+                  <LanguageSwitcher />
 
                   {/* MENU ITEMS */}
                   {navItems.map((item) => (
@@ -160,6 +173,12 @@ const Navbar = () => {
                   <div className="border-t pt-4">
                     {isAuthenticated ? (
                       <>
+                        {isAdminRole(user?.role) && (
+                          <Link to="/admin" className="mb-2 flex items-center gap-2 rounded-md p-2 hover:bg-muted transition">
+                            <UserIcon className="h-4 w-4" />
+                            <span className="text-sm font-medium">Quản trị viên</span>
+                          </Link>
+                        )}
                         <Link to="/profile" className="flex items-center gap-2 mb-2 rounded-md p-2 hover:bg-muted transition">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={user?.avatarUrl} />

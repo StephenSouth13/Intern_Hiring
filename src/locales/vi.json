@@ -1,0 +1,39 @@
+{
+  "gender": {
+    "MALE": "Nam",
+    "FEMALE": "Nữ",
+    "OTHER": "Khác"
+  },
+  "role": {
+    "CANDIDATE": "Ứng viên",
+    "EMPLOYER": "Nhà tuyển dụng",
+    "ADMIN": "Quản trị viên"
+  },
+  "nav": {
+    "profile": "Thông tin cá nhân",
+    "logout": "Đăng xuất",
+    "login": "Đăng nhập",
+    "search": "Tìm kiếm",
+    "jobs": "Việc làm",
+    "partners": "Đối tác",
+    "recruitment": "Tuyển dụng"
+  },
+  "profile": {
+    "personal_info": "Thông tin cá nhân",
+    "edit": "Chỉnh sửa",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "last_name": "Họ",
+    "first_name": "Tên",
+    "phone": "Số điện thoại",
+    "gender_label": "Giới tính",
+    "select": "Chọn",
+    "email": "Email",
+    "change_password": "Đổi mật khẩu",
+    "new_password": "Mật khẩu mới",
+    "confirm_password": "Xác nhận mật khẩu",
+    "cv_title": "CV",
+    "view_cv": "Xem CV hiện tại",
+    "drag_drop_cv": "Kéo thả file ở đây hoặc nhấn để chọn (PDF / DOC / DOCX)"
+  }
+}

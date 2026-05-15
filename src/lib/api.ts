@@ -20,6 +20,32 @@ function buildUrl(path: string, params?: RequestOptions["params"]) {
   return url.toString();
 }
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly statusText: string,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export const isApiError = (error: unknown): error is ApiError => error instanceof ApiError;
+
+async function readErrorMessage(response: Response) {
+  const errorText = await response.text();
+
+  if (!errorText) return "Unknown error";
+
+  try {
+    const body = JSON.parse(errorText) as { message?: string; error?: string };
+    return body.message || body.error || errorText;
+  } catch {
+    return errorText;
+  }
+}
+
 export async function apiRequest<T>(
   path: string,
   { params, headers, ...options }: RequestOptions = {},
@@ -33,10 +59,8 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `API ${response.status} ${response.statusText}: ${errorText || "Unknown error"}`,
-    );
+    const message = await readErrorMessage(response);
+    throw new ApiError(`API ${response.status} ${response.statusText}: ${message}`, response.status, response.statusText);
   }
 
   if (response.status === 204) {
@@ -58,6 +82,9 @@ export type ApiUser = {
   firstName: string;
   lastName: string;
   role: string;
+  status?: string;
+  restricted?: boolean;
+  isRestricted?: boolean;
   avatarUrl?: string;
   phoneNumber?: string;
   gender?: string;
@@ -91,4 +118,96 @@ export const userApi = {
       headers: authHeaders(token),
       body: JSON.stringify(data),
     }),
+};
+
+export type AdminUser = ApiUser & {
+  createdAt?: string;
+};
+
+export type AdminJobPost = {
+  id: string | number;
+  title: string;
+  company?: string;
+  employerName?: string;
+  employerEmail?: string;
+  location?: string;
+  type?: string;
+  salary?: string;
+  status?: string;
+  description?: string;
+  createdAt?: string;
+  deletedAt?: string | null;
+};
+
+export type EmployerVerificationRequest = {
+  id: string | number;
+  userId?: string | number;
+  userEmail?: string;
+  companyName: string;
+  companyEmail: string;
+  taxCode: string;
+  status: "PENDING" | "APPROVED" | "REJECTED" | string;
+  createdAt?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+  extraFields?: Record<string, string>;
+};
+
+export const adminApi = {
+  listUsers: (token: string) =>
+    apiRequest<AdminUser[]>("/api/admin/users", {
+      headers: authHeaders(token),
+    }),
+
+
+  setUserRestriction: (token: string, userId: string | number, restricted: boolean) =>
+    apiRequest<AdminUser>(`/api/admin/users/${encodeURIComponent(String(userId))}/restriction`, {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: JSON.stringify({ restricted }),
+    }),
+
+  listJobs: (token: string, includeTrash = true) =>
+    apiRequest<AdminJobPost[]>("/api/admin/jobs", {
+      headers: authHeaders(token),
+      params: { includeTrash },
+    }),
+
+  moveJobToTrash: (token: string, jobId: string | number) =>
+    apiRequest<AdminJobPost>(`/api/admin/jobs/${encodeURIComponent(String(jobId))}/trash`, {
+      method: "PATCH",
+      headers: authHeaders(token),
+    }),
+
+  restoreJob: (token: string, jobId: string | number) =>
+    apiRequest<AdminJobPost>(`/api/admin/jobs/${encodeURIComponent(String(jobId))}/restore`, {
+      method: "PATCH",
+      headers: authHeaders(token),
+    }),
+
+  deleteJobPermanently: (token: string, jobId: string | number) =>
+    apiRequest<void>(`/api/admin/jobs/${encodeURIComponent(String(jobId))}`, {
+      method: "DELETE",
+      headers: authHeaders(token),
+    }),
+
+  listEmployerRequests: (token: string) =>
+    apiRequest<EmployerVerificationRequest[]>("/api/admin/employer-verification-requests", {
+      headers: authHeaders(token),
+    }),
+
+  reviewEmployerRequest: (
+    token: string,
+    requestId: string | number,
+    status: "APPROVED" | "REJECTED",
+    rejectionReason?: string,
+  ) =>
+    apiRequest<EmployerVerificationRequest>(
+      `/api/admin/employer-verification-requests/${encodeURIComponent(String(requestId))}`,
+      {
+        method: "PATCH",
+        headers: authHeaders(token),
+        body: JSON.stringify({ status, rejectionReason }),
+      },
+    ),
 };

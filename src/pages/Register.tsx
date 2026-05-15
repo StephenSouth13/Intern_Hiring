@@ -6,6 +6,7 @@ import * as z from "zod";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { USER_ROLES } from "@/lib/roles";
 import {
   Card,
   CardContent,
@@ -64,7 +65,7 @@ const Register = () => {
             first_name: values.firstName,
             last_name: values.lastName,
             phone_number: values.phoneNumber,
-            role: "CANDIDATE",
+            role: USER_ROLES.CANDIDATE,
           },
         },
       });
