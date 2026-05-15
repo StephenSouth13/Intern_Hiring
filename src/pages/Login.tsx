@@ -6,7 +6,7 @@ import * as z from "zod";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import { authApi } from "@/lib/api";
+import { authApi, isApiError } from "@/lib/api";
 import { isAdminRole, isRestrictedAccount } from "@/lib/roles";
 import ResetPasswordDialog from "@/components/ResetPasswordDialog";
 import {
@@ -79,8 +79,14 @@ const Login = () => {
 
       toast.success("Đăng nhập thành công!");
       navigate(redirectTo);
-    } catch (error: any) {
-      toast.error(error.message || "Không thể kết nối đến hệ thống");
+    } catch (error: unknown) {
+      if (isApiError(error) && error.status === 403) {
+        await supabase.auth.signOut();
+        toast.error("Tài khoản của bạn đang bị hạn chế và không thể đăng nhập vào hệ thống.");
+        return;
+      }
+
+      toast.error(error instanceof Error ? error.message : "Không thể kết nối đến hệ thống");
     } finally {
       setIsLoading(false);
     }

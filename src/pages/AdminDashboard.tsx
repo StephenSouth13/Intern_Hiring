@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { adminApi, type AdminJobPost, type AdminUser, type EmployerVerificationRequest } from "@/lib/api";
+import { adminApi, isApiError, type AdminJobPost, type AdminUser, type EmployerVerificationRequest } from "@/lib/api";
 import { isAdminRole, USER_ROLES } from "@/lib/roles";
 import { supabase } from "@/lib/supabase";
 import { CategoryManagementPanel } from "@/components/admin/CategoryManagementPanel";
@@ -43,7 +43,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 
 type AdminSection = "users" | "jobs" | "employer-requests" | "categories";
-type DbRecord = Record<string, any>;
+type DbValue = string | number | boolean | null | undefined | Record<string, unknown>;
+type DbRecord = Record<string, DbValue>;
+
+const getErrorMessage = (error: unknown, fallback: string) => (error instanceof Error ? error.message : fallback);
 
 const USER_TABLES = ["users", "user", "User"];
 const JOB_TABLES = ["jobs", "job_posts", "recruitment_posts", "Job", "JobPost", "RecruitmentPost"];
@@ -209,7 +212,7 @@ const AdminDashboard: React.FC = () => {
     setLoadingData(true);
     try {
       const [userList, jobList, requestList, managedConfig] = await Promise.all([
-        adminApi.listUsers(token).catch(() => selectFromFirstAvailableTable(USER_TABLES, normalizeUser)).catch(() => []),
+        adminApi.listUsers(token),
         adminApi.listJobs(token).catch(() => selectFromFirstAvailableTable(JOB_TABLES, normalizeJob)).catch(() => []),
         adminApi
           .listEmployerRequests(token)
@@ -222,8 +225,8 @@ const AdminDashboard: React.FC = () => {
       setJobs(jobList);
       setRequests(requestList);
       setSiteConfig(managedConfig);
-    } catch (error: any) {
-      toast.error(error?.message || "Không thể tải dữ liệu quản trị.");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Không thể tải dữ liệu quản trị."));
     } finally {
       setLoadingData(false);
     }
@@ -245,43 +248,22 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleDeleteUser = async (targetUser: AdminUser) => {
-    if (!token) return;
-    if (!requireConfirm("Xóa vĩnh viễn tài khoản này? Thao tác này không thể hoàn tác.")) return;
-
-    setActionId(targetUser.id);
-    try {
-      await adminApi.deleteUserPermanently(token, targetUser.id);
-      toast.success("Đã xóa vĩnh viễn tài khoản.");
-      setSelectedUser(null);
-      await loadData();
-    } catch (error: any) {
-      toast.error(
-        error?.message ||
-          "Không thể xóa tài khoản. Backend admin cần xóa cả auth user bằng Supabase service role.",
-      );
-    } finally {
-      setActionId(null);
-    }
-  };
 
   const handleRestriction = async (targetUser: AdminUser, restricted: boolean) => {
     if (!token) return;
 
     setActionId(targetUser.id);
     try {
-      await adminApi.setUserRestriction(token, targetUser.id, restricted).catch(() =>
-        updateFirstAvailableTable(USER_TABLES, targetUser.id, [
-          { restricted },
-          { is_restricted: restricted },
-          { status: restricted ? "RESTRICTED" : "ACTIVE" },
-        ]),
-      );
+      await adminApi.setUserRestriction(token, targetUser.id, restricted);
 
       toast.success(restricted ? "Đã hạn chế tài khoản." : "Đã bỏ hạn chế tài khoản.");
       await loadData();
-    } catch (error: any) {
-      toast.error(error?.message || "Không thể cập nhật trạng thái hạn chế.");
+    } catch (error: unknown) {
+      if (isApiError(error) && error.status === 403) {
+        toast.error("Bạn không có quyền cập nhật hạn chế tài khoản này.");
+      } else {
+        toast.error(error instanceof Error ? error.message : "Không thể cập nhật trạng thái hạn chế.");
+      }
     } finally {
       setActionId(null);
     }
@@ -301,8 +283,8 @@ const AdminDashboard: React.FC = () => {
 
       toast.success("Đã chuyển bài đăng vào thùng rác.");
       await loadData();
-    } catch (error: any) {
-      toast.error(error?.message || "Không thể chuyển bài đăng vào thùng rác.");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Không thể chuyển bài đăng vào thùng rác."));
     } finally {
       setActionId(null);
     }
@@ -322,8 +304,8 @@ const AdminDashboard: React.FC = () => {
 
       toast.success("Đã khôi phục bài đăng.");
       await loadData();
-    } catch (error: any) {
-      toast.error(error?.message || "Không thể khôi phục bài đăng.");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Không thể khôi phục bài đăng."));
     } finally {
       setActionId(null);
     }
@@ -338,8 +320,8 @@ const AdminDashboard: React.FC = () => {
       await adminApi.deleteJobPermanently(token, job.id).catch(() => deleteFromFirstAvailableTable(JOB_TABLES, job.id));
       toast.success("Đã xóa vĩnh viễn bài đăng.");
       await loadData();
-    } catch (error: any) {
-      toast.error(error?.message || "Không thể xóa vĩnh viễn bài đăng.");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Không thể xóa vĩnh viễn bài đăng."));
     } finally {
       setActionId(null);
     }
@@ -373,8 +355,8 @@ const AdminDashboard: React.FC = () => {
       setRejectingRequest(null);
       setRejectionReason("");
       await loadData();
-    } catch (error: any) {
-      toast.error(error?.message || "Không thể xử lý yêu cầu.");
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, "Không thể xử lý yêu cầu."));
     } finally {
       setActionId(null);
     }
@@ -542,15 +524,7 @@ const AdminDashboard: React.FC = () => {
                                   <ShieldAlert className="h-4 w-4" />
                                   {restricted ? "Bỏ hạn chế" : "Hạn chế"}
                                 </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  disabled={actionId === account.id || isAdminRole(account.role)}
-                                  onClick={() => handleDeleteUser(account)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  Xóa
-                                </Button>
+
                               </div>
                             </TableCell>
                           </TableRow>

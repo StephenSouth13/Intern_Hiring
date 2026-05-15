@@ -20,6 +20,32 @@ function buildUrl(path: string, params?: RequestOptions["params"]) {
   return url.toString();
 }
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly statusText: string,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export const isApiError = (error: unknown): error is ApiError => error instanceof ApiError;
+
+async function readErrorMessage(response: Response) {
+  const errorText = await response.text();
+
+  if (!errorText) return "Unknown error";
+
+  try {
+    const body = JSON.parse(errorText) as { message?: string; error?: string };
+    return body.message || body.error || errorText;
+  } catch {
+    return errorText;
+  }
+}
+
 export async function apiRequest<T>(
   path: string,
   { params, headers, ...options }: RequestOptions = {},
@@ -33,10 +59,8 @@ export async function apiRequest<T>(
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `API ${response.status} ${response.statusText}: ${errorText || "Unknown error"}`,
-    );
+    const message = await readErrorMessage(response);
+    throw new ApiError(`API ${response.status} ${response.statusText}: ${message}`, response.status, response.statusText);
   }
 
   if (response.status === 204) {
@@ -135,11 +159,6 @@ export const adminApi = {
       headers: authHeaders(token),
     }),
 
-  deleteUserPermanently: (token: string, userId: string | number) =>
-    apiRequest<void>(`/api/admin/users/${encodeURIComponent(String(userId))}`, {
-      method: "DELETE",
-      headers: authHeaders(token),
-    }),
 
   setUserRestriction: (token: string, userId: string | number, restricted: boolean) =>
     apiRequest<AdminUser>(`/api/admin/users/${encodeURIComponent(String(userId))}/restriction`, {

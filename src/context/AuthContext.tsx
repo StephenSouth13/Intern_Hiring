@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { authApi, type ApiUser } from '../lib/api';
+import { authApi, isApiError, type ApiUser } from '../lib/api';
 import { isRestrictedAccount } from '../lib/roles';
 
 type User = ApiUser;
@@ -13,6 +13,7 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
+  restrictedMessage: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,18 +22,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [restrictedMessage, setRestrictedMessage] = useState<string | null>(null);
+
+  const clearSession = async () => {
+    await supabase.auth.signOut();
+    setToken(null);
+    setUser(null);
+  };
+
+  const handleRestrictedSession = async () => {
+    await clearSession();
+    setRestrictedMessage('Tài khoản của bạn đang bị hạn chế. Vui lòng liên hệ quản trị viên.');
+  };
 
   const fetchUserProfile = async (accessToken: string) => {
     try {
       const userData = await authApi.getMe(accessToken);
       if (isRestrictedAccount(userData)) {
-        await supabase.auth.signOut();
-        setToken(null);
-        setUser(null);
+        await handleRestrictedSession();
         return;
       }
       setUser(userData);
     } catch (error) {
+      if (isApiError(error) && error.status === 403) {
+        await handleRestrictedSession();
+        return;
+      }
+
       console.error('Error fetching user profile:', error);
       setUser(null);
     }
@@ -73,14 +89,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (userData: User, authToken: string) => {
+    setRestrictedMessage(null);
     setUser(userData);
     setToken(authToken);
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setToken(null);
+    await clearSession();
+    setRestrictedMessage(null);
   };
 
   const refreshUser = async () => {
@@ -94,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, refreshUser, isAuthenticated: !!token, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, refreshUser, isAuthenticated: !!token, isLoading, restrictedMessage }}>
       {children}
     </AuthContext.Provider>
   );

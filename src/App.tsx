@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
+import { AlertTriangle } from "lucide-react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/ui/Navbar";
 import Home from "./pages/Home";
@@ -38,6 +39,21 @@ const AdminRoute = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
+const RestrictedAccountBanner = () => {
+  const { restrictedMessage } = useAuth();
+
+  if (!restrictedMessage) return null;
+
+  return (
+    <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+      <div className="container mx-auto flex items-center gap-2">
+        <AlertTriangle className="h-4 w-4" />
+        <span>{restrictedMessage}</span>
+      </div>
+    </div>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -46,6 +62,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Navbar />
+          <RestrictedAccountBanner />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
