@@ -41,11 +41,35 @@ export const emptyJobFilterValue: JobFilterValue = {
 };
 
 export const defaultJobFilterOptions: JobFilterOptions = {
-  cities: [],
-  workModes: [],
-  jobTypes: [],
-  districts: [],
+  cities: [
+    { value: "ho-chi-minh", label: "Hồ Chí Minh" },
+    { value: "ha-noi", label: "Hà Nội" },
+    { value: "da-nang", label: "Đà Nẵng" },
+    { value: "remote", label: "Remote" },
+  ],
+  workModes: [
+    { value: "onsite", label: "Làm việc tại văn phòng" },
+    { value: "hybrid", label: "Hybrid" },
+    { value: "remote", label: "Remote" },
+  ],
+  jobTypes: [
+    { value: "internship", label: "Thực tập" },
+    { value: "part-time", label: "Part-time" },
+    { value: "full-time", label: "Full-time" },
+  ],
+  districts: [
+    { value: "quan-1", label: "Quận 1" },
+    { value: "quan-3", label: "Quận 3" },
+    { value: "thu-duc", label: "Thành phố Thủ Đức" },
+  ],
   wards: [],
-  companies: [],
-  currencies: [],
+  companies: [
+    { value: "asl", label: "ASL" },
+    { value: "binemo", label: "Binemo" },
+    { value: "cp-group", label: "CP Group" },
+  ],
+  currencies: [
+    { value: "vnd", label: "VND" },
+    { value: "usd", label: "USD" },
+  ],
 };

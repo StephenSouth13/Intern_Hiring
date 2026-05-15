@@ -16,6 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { isAdminRole } from "@/lib/roles";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -100,6 +101,11 @@ const Navbar = () => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  {isAdminRole(user?.role) && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin">Quản trị viên</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link to="/profile">Hồ sơ</Link>
                   </DropdownMenuItem>
@@ -160,6 +166,12 @@ const Navbar = () => {
                   <div className="border-t pt-4">
                     {isAuthenticated ? (
                       <>
+                        {isAdminRole(user?.role) && (
+                          <Link to="/admin" className="mb-2 flex items-center gap-2 rounded-md p-2 hover:bg-muted transition">
+                            <UserIcon className="h-4 w-4" />
+                            <span className="text-sm font-medium">Quản trị viên</span>
+                          </Link>
+                        )}
                         <Link to="/profile" className="flex items-center gap-2 mb-2 rounded-md p-2 hover:bg-muted transition">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={user?.avatarUrl} />

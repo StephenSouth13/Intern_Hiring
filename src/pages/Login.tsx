@@ -6,6 +6,8 @@ import * as z from "zod";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { authApi } from "@/lib/api";
+import { isAdminRole, isRestrictedAccount } from "@/lib/roles";
 import ResetPasswordDialog from "@/components/ResetPasswordDialog";
 import {
   Card,
@@ -25,7 +27,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck } from "lucide-react";
 
 const loginSchema = z.object({
@@ -52,15 +53,32 @@ const Login = () => {
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
         password: values.password,
       });
 
       if (error) throw error;
 
+      let redirectTo = "/";
+      const accessToken = data.session?.access_token;
+
+      if (accessToken) {
+        const profile = await authApi.getMe(accessToken);
+
+        if (isRestrictedAccount(profile)) {
+          await supabase.auth.signOut();
+          toast.error("Tài khoản của bạn đang bị hạn chế và không thể đăng nhập vào hệ thống.");
+          return;
+        }
+
+        if (isAdminRole(profile.role)) {
+          redirectTo = "/admin";
+        }
+      }
+
       toast.success("Đăng nhập thành công!");
-      navigate("/");
+      navigate(redirectTo);
     } catch (error: any) {
       toast.error(error.message || "Không thể kết nối đến hệ thống");
     } finally {
@@ -79,9 +97,6 @@ const Login = () => {
         >
           <section className="hidden hero-gradient p-8 text-white md:flex md:flex-col md:justify-between">
             <div>
-              <Badge className="mb-5 border-white/30 bg-white/15 text-white hover:bg-white/20">
-                Học kỳ doanh nghiệp 2025
-              </Badge>
               <h1 className="text-3xl font-bold leading-tight">
                 Chào mừng bạn quay lại InternHiring
               </h1>
@@ -99,11 +114,6 @@ const Login = () => {
 
           <Card className="border-0 shadow-none">
             <CardHeader className="space-y-2 px-6 pb-4 pt-6 sm:px-8">
-              <div className="md:hidden">
-                <Badge className="mb-3 bg-primary text-primary-foreground">
-                  Học kỳ doanh nghiệp 2025
-                </Badge>
-              </div>
               <CardTitle className="text-2xl font-bold text-foreground">
                 Đăng nhập
               </CardTitle>

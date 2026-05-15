@@ -1,10 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ArrowRight, Search } from "lucide-react";
 import { JobSearchFilters } from "@/components/jobs/JobSearchFilters";
 import mscBackground from "@/assets/msc.jpg";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+import {
+    defaultManagedSiteConfig,
+    loadManagedSiteConfig,
+    type ManagedSiteConfig,
+} from "@/lib/siteConfig";
 
 const corporatePartners = [
     { id: 1, name: "ASL", logo: "/carousel/ASL.webp" },
@@ -38,6 +57,105 @@ const featuredJobs = [
 ];
 
 const Home: React.FC = () => {
+    const navigate = useNavigate();
+    const { user, isAuthenticated } = useAuth();
+    const [managedConfig, setManagedConfig] = useState<ManagedSiteConfig>(defaultManagedSiteConfig);
+    const [isEmployerDialogOpen, setIsEmployerDialogOpen] = useState(false);
+    const [isSubmittingEmployerRequest, setIsSubmittingEmployerRequest] = useState(false);
+    const [employerRequest, setEmployerRequest] = useState<Record<string, string>>({
+        companyName: "",
+        companyEmail: "",
+        taxCode: "",
+    });
+    const partnerList = managedConfig.partners.length > 0 ? managedConfig.partners : corporatePartners;
+    const employerFields = managedConfig.employerVerificationFields;
+    const midpoint = Math.ceil(partnerList.length / 2);
+    const firstPartnerRow = partnerList.slice(0, midpoint);
+    const secondPartnerRow = partnerList.slice(midpoint);
+    const partnerRows = [
+        { partners: firstPartnerRow, reverse: false },
+        { partners: secondPartnerRow, reverse: true },
+    ].filter((row) => row.partners.length > 0);
+
+    useEffect(() => {
+        let mounted = true;
+
+        loadManagedSiteConfig().then((config) => {
+            if (mounted) setManagedConfig(config);
+        });
+
+        const handleConfigUpdate = (event: Event) => {
+            const nextConfig = (event as CustomEvent<ManagedSiteConfig>).detail;
+            if (nextConfig) setManagedConfig(nextConfig);
+        };
+
+        window.addEventListener("managed-site-config-updated", handleConfigUpdate);
+
+        return () => {
+            mounted = false;
+            window.removeEventListener("managed-site-config-updated", handleConfigUpdate);
+        };
+    }, []);
+
+    const openEmployerRequestDialog = () => {
+        if (!isAuthenticated) {
+            toast.error("Vui lòng đăng nhập trước khi gửi yêu cầu xác thực nhà tuyển dụng.");
+            navigate("/login");
+            return;
+        }
+
+        setIsEmployerDialogOpen(true);
+    };
+
+    const submitEmployerRequest = async () => {
+        const requiredMissing = employerFields.some((field) => field.required && !employerRequest[field.name]?.trim());
+
+        if (requiredMissing) {
+            toast.error("Vui lòng nhập đầy đủ các trường bắt buộc.");
+            return;
+        }
+
+        setIsSubmittingEmployerRequest(true);
+        try {
+            const extraFields = employerFields.reduce<Record<string, string>>((result, field) => {
+                result[field.label] = employerRequest[field.name]?.trim() || "";
+                return result;
+            }, {});
+
+            const payload = {
+                user_id: user?.id,
+                user_email: user?.email,
+                company_name: employerRequest.companyName?.trim() || "",
+                company_email: employerRequest.companyEmail?.trim() || "",
+                tax_code: employerRequest.taxCode?.trim() || "",
+                extra_fields: extraFields,
+                status: "PENDING",
+            };
+
+            const requestTables = ["employer_verification_requests", "employer_requests", "EmployerVerificationRequest"];
+            let lastError: unknown = null;
+
+            for (const tableName of requestTables) {
+                const { error } = await supabase.from(tableName).insert(payload);
+                if (!error) {
+                    lastError = null;
+                    break;
+                }
+                lastError = error;
+            }
+
+            if (lastError) throw lastError;
+
+            toast.success("Đã gửi yêu cầu xác thực nhà tuyển dụng.");
+            setEmployerRequest({});
+            setIsEmployerDialogOpen(false);
+        } catch (error: any) {
+            toast.error(error?.message || "Không thể gửi yêu cầu xác thực.");
+        } finally {
+            setIsSubmittingEmployerRequest(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-background">
             {/* Hero: Job search */}
@@ -86,7 +204,7 @@ const Home: React.FC = () => {
             <section className="py-16">
                 <div className="container mx-auto px-4">
                     <div id="tim-kiem" className="mb-8 scroll-mt-24">
-                        <JobSearchFilters />
+                        <JobSearchFilters options={managedConfig.filters} />
                     </div>
 
                     <div id="viec-lam" className="flex scroll-mt-24 items-center justify-between mb-6">
@@ -128,16 +246,31 @@ const Home: React.FC = () => {
                             Các công ty tuyển dụng hàng đầu
                         </p>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 mt-8">
-                        {corporatePartners.map((p) => (
-                            <motion.div
-                                key={p.id}
-                                className="flex items-center justify-center p-4 bg-card rounded-lg shadow-sm hover:shadow-lg cursor-pointer"
-                                whileHover={{ scale: 1.1 }}
-                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    <div className="mt-8 space-y-6 overflow-hidden">
+                        {partnerRows.map((row, rowIndex) => (
+                            <div
+                                key={rowIndex}
+                                className="relative overflow-hidden"
+                                aria-label={`Dòng đối tác ${rowIndex + 1}`}
                             >
-                                <img src={p.logo} alt={p.name} className="max-h-12 object-contain" loading="lazy" />
-                            </motion.div>
+                                <div className={`partner-marquee ${row.reverse ? "partner-marquee-reverse" : ""}`}>
+                                    {[...row.partners, ...row.partners].map((p, index) => {
+                                        const isDuplicate = index >= row.partners.length;
+
+                                        return (
+                                            <motion.div
+                                                key={`${rowIndex}-${p.id}-${index}`}
+                                                className="partner-marquee-item flex h-24 w-48 items-center justify-center rounded-lg bg-card p-4 shadow-sm hover:shadow-lg cursor-pointer sm:w-56 md:w-60"
+                                                whileHover={{ scale: 1.08 }}
+                                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                                aria-hidden={isDuplicate}
+                                            >
+                                                <img src={p.logo} alt={isDuplicate ? "" : p.name} className="max-h-12 object-contain" loading="lazy" />
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -150,7 +283,7 @@ const Home: React.FC = () => {
                         Bạn là nhà tuyển dụng? Hãy tiến thành xác thực với chúng tôi.
                     </h2>
                     <div className="flex justify-center mt-6">
-                        <Button variant="secondary">Yêu cầu xác thực</Button>
+                        <Button variant="secondary" onClick={openEmployerRequestDialog}>Yêu cầu xác thực</Button>
                     </div>
                 </div>
             </section>
@@ -160,6 +293,45 @@ const Home: React.FC = () => {
                     © 2026 InternHiring MSC Center. All rights reserved.
                 </div>
             </footer>
+
+            <Dialog open={isEmployerDialogOpen} onOpenChange={setIsEmployerDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Yêu cầu xác thực nhà tuyển dụng</DialogTitle>
+                        <DialogDescription>
+                            Gửi thông tin doanh nghiệp để quản trị viên duyệt quyền nhà tuyển dụng.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        {employerFields.map((field) => (
+                            <div key={field.id}>
+                                <Label>
+                                    {field.label}
+                                    {field.required && <span className="ml-1 text-destructive">*</span>}
+                                </Label>
+                                <Input
+                                    type={field.type}
+                                    value={employerRequest[field.name] || ""}
+                                    onChange={(event) =>
+                                        setEmployerRequest({ ...employerRequest, [field.name]: event.target.value })
+                                    }
+                                    placeholder={field.placeholder}
+                                    className="mt-2"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsEmployerDialogOpen(false)} disabled={isSubmittingEmployerRequest}>
+                            Hủy
+                        </Button>
+                        <Button onClick={submitEmployerRequest} disabled={isSubmittingEmployerRequest}>
+                            {isSubmittingEmployerRequest && <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />}
+                            Gửi yêu cầu
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

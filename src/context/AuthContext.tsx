@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { authApi, type ApiUser } from '../lib/api';
+import { isRestrictedAccount } from '../lib/roles';
 
 type User = ApiUser;
 
@@ -24,6 +25,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchUserProfile = async (accessToken: string) => {
     try {
       const userData = await authApi.getMe(accessToken);
+      if (isRestrictedAccount(userData)) {
+        await supabase.auth.signOut();
+        setToken(null);
+        setUser(null);
+        return;
+      }
       setUser(userData);
     } catch (error) {
       console.error('Error fetching user profile:', error);
