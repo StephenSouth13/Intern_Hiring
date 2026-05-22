@@ -173,6 +173,13 @@ export const adminApi = {
       params: { includeTrash },
     }),
 
+  createJob: (token: string, data: Omit<AdminJobPost, "id" | "createdAt" | "deletedAt" | "status">) =>
+    apiRequest<AdminJobPost>("/api/admin/jobs", {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(data),
+    }),
+
   moveJobToTrash: (token: string, jobId: string | number) =>
     apiRequest<AdminJobPost>(`/api/admin/jobs/${encodeURIComponent(String(jobId))}/trash`, {
       method: "PATCH",

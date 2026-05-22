@@ -18,8 +18,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { adminApi, isApiError, recruiterApi, type AdminJobPost, type AdminUser, type RecruiterApplication } from "@/lib/api";
-import { isAdminRole, USER_ROLES } from "@/lib/roles";
-import { supabase } from "@/lib/supabase";
+import { isAdminRole } from "@/lib/roles";
 import { CategoryManagementPanel } from "@/components/admin/CategoryManagementPanel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,52 +36,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 
 type AdminSection = "users" | "jobs" | "employer-requests" | "categories";
-type DbValue = string | number | boolean | null | undefined | Record<string, unknown>;
-type DbRecord = Record<string, DbValue>;
 
 const getErrorMessage = (error: unknown, fallback: string) => (error instanceof Error ? error.message : fallback);
 
-const USER_TABLES = ["users", "user", "User"];
-const JOB_TABLES = ["jobs", "job_posts", "recruitment_posts", "Job", "JobPost", "RecruitmentPost"];
-
-const valueOf = (record: DbRecord, keys: string[], fallback = "") => {
-  for (const key of keys) {
-    const value = record?.[key];
-    if (value !== undefined && value !== null && value !== "") return value;
-  }
-  return fallback;
-};
-
-const normalizeUser = (record: DbRecord): AdminUser => ({
-  id: valueOf(record, ["id", "user_id"]),
-  email: valueOf(record, ["email"]),
-  firstName: valueOf(record, ["firstName", "first_name"]),
-  lastName: valueOf(record, ["lastName", "last_name"]),
-  role: valueOf(record, ["role"], USER_ROLES.CANDIDATE),
-  status: valueOf(record, ["status"]),
-  restricted: Boolean(valueOf(record, ["restricted", "isRestricted", "is_restricted"], false)),
-  avatarUrl: valueOf(record, ["avatarUrl", "avatar_url"]),
-  phoneNumber: valueOf(record, ["phoneNumber", "phone_number"]),
-  gender: valueOf(record, ["gender"]),
-  dob: valueOf(record, ["dob", "date_of_birth"]),
-  cvUrl: valueOf(record, ["cvUrl", "cv_url"]),
-  createdAt: valueOf(record, ["createdAt", "created_at"]),
-});
-
-const normalizeJob = (record: DbRecord): AdminJobPost => ({
-  id: valueOf(record, ["id", "job_id"]),
-  title: valueOf(record, ["title", "job_title"], "Chưa có tiêu đề"),
-  company: valueOf(record, ["company", "companyName", "company_name"]),
-  employerName: valueOf(record, ["employerName", "employer_name"]),
-  employerEmail: valueOf(record, ["employerEmail", "employer_email"]),
-  location: valueOf(record, ["location"]),
-  type: valueOf(record, ["type", "job_type"]),
-  salary: valueOf(record, ["salary"]),
-  status: valueOf(record, ["status"], "ACTIVE"),
-  description: valueOf(record, ["description", "content"]),
-  createdAt: valueOf(record, ["createdAt", "created_at"]),
-  deletedAt: valueOf(record, ["deletedAt", "deleted_at"], null),
-});
 
 const isTrashedJob = (job: AdminJobPost) => {
   const status = job.status?.toUpperCase();
@@ -96,54 +52,6 @@ const formatDate = (value?: string | null) => {
   return date.toLocaleString("vi-VN");
 };
 
-async function selectFromFirstAvailableTable<T>(
-  tableNames: string[],
-  normalizer: (record: DbRecord) => T,
-): Promise<T[]> {
-  let lastError: unknown = null;
-
-  for (const tableName of tableNames) {
-    const { data, error } = await supabase.from(tableName).select("*");
-
-    if (!error) {
-      return (data || []).map(normalizer);
-    }
-
-    lastError = error;
-  }
-
-  throw lastError;
-}
-
-async function updateFirstAvailableTable(
-  tableNames: string[],
-  id: string | number,
-  payloads: DbRecord[],
-) {
-  let lastError: unknown = null;
-
-  for (const tableName of tableNames) {
-    for (const payload of payloads) {
-      const { error } = await supabase.from(tableName).update(payload).eq("id", id);
-      if (!error) return;
-      lastError = error;
-    }
-  }
-
-  throw lastError;
-}
-
-async function deleteFromFirstAvailableTable(tableNames: string[], id: string | number) {
-  let lastError: unknown = null;
-
-  for (const tableName of tableNames) {
-    const { error } = await supabase.from(tableName).delete().eq("id", id);
-    if (!error) return;
-    lastError = error;
-  }
-
-  throw lastError;
-}
 
 const AdminDashboard: React.FC = () => {
   const { user, token, isAuthenticated, isLoading } = useAuth();
@@ -172,7 +80,7 @@ const AdminDashboard: React.FC = () => {
     try {
       const [userList, jobList, requestList] = await Promise.all([
         adminApi.listUsers(token),
-        adminApi.listJobs(token).catch(() => selectFromFirstAvailableTable(JOB_TABLES, normalizeJob)).catch(() => []),
+        adminApi.listJobs(token),
         recruiterApi.listApplications(token).catch(() => []),
       ]);
 
@@ -220,12 +128,7 @@ const AdminDashboard: React.FC = () => {
 
     setActionId(job.id);
     try {
-      await adminApi.moveJobToTrash(token, job.id).catch(() =>
-        updateFirstAvailableTable(JOB_TABLES, job.id, [
-          { deleted_at: new Date().toISOString() },
-          { status: "TRASHED" },
-        ]),
-      );
+      await adminApi.moveJobToTrash(token, job.id);
 
       toast.success("Đã chuyển bài đăng vào thùng rác.");
       await loadData();
@@ -241,12 +144,7 @@ const AdminDashboard: React.FC = () => {
 
     setActionId(job.id);
     try {
-      await adminApi.restoreJob(token, job.id).catch(() =>
-        updateFirstAvailableTable(JOB_TABLES, job.id, [
-          { deleted_at: null },
-          { status: "ACTIVE" },
-        ]),
-      );
+      await adminApi.restoreJob(token, job.id);
 
       toast.success("Đã khôi phục bài đăng.");
       await loadData();
@@ -263,7 +161,7 @@ const AdminDashboard: React.FC = () => {
 
     setActionId(job.id);
     try {
-      await adminApi.deleteJobPermanently(token, job.id).catch(() => deleteFromFirstAvailableTable(JOB_TABLES, job.id));
+      await adminApi.deleteJobPermanently(token, job.id);
       toast.success("Đã xóa vĩnh viễn bài đăng.");
       await loadData();
     } catch (error: unknown) {
