@@ -139,20 +139,6 @@ export type AdminJobPost = {
   deletedAt?: string | null;
 };
 
-export type EmployerVerificationRequest = {
-  id: string | number;
-  userId?: string | number;
-  userEmail?: string;
-  companyName: string;
-  companyEmail: string;
-  taxCode: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | string;
-  createdAt?: string;
-  reviewedAt?: string;
-  rejectionReason?: string;
-  extraFields?: Record<string, string>;
-};
-
 export const adminApi = {
   listUsers: (token: string) =>
     apiRequest<AdminUser[]>("/api/admin/users", {
@@ -197,26 +183,6 @@ export const adminApi = {
       method: "DELETE",
       headers: authHeaders(token),
     }),
-
-  listEmployerRequests: (token: string) =>
-    apiRequest<EmployerVerificationRequest[]>("/api/admin/employer-verification-requests", {
-      headers: authHeaders(token),
-    }),
-
-  reviewEmployerRequest: (
-    token: string,
-    requestId: string | number,
-    status: "APPROVED" | "REJECTED",
-    rejectionReason?: string,
-  ) =>
-    apiRequest<EmployerVerificationRequest>(
-      `/api/admin/employer-verification-requests/${encodeURIComponent(String(requestId))}`,
-      {
-        method: "PATCH",
-        headers: authHeaders(token),
-        body: JSON.stringify({ status, rejectionReason }),
-      },
-    ),
 };
 
 export type CategoryKey = "CITIES" | "WORK_MODES" | "JOB_TYPES" | "DISTRICTS" | "WARDS" | "COMPANIES" | "CURRENCIES";
