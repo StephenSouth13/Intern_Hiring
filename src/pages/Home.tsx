@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2, Search } from "lucide-react";
-import { JobSearchFilters } from "@/components/jobs/JobSearchFilters";
+import { ArrowRight, Loader2, Briefcase, Users, Award } from "lucide-react";
 import mscBackground from "@/assets/msc.jpg";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
@@ -54,47 +53,25 @@ const corporatePartners = [
 const Home: React.FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const { user, token, isAuthenticated } = useAuth();
+    const { token, isAuthenticated } = useAuth();
     const [managedConfig, setManagedConfig] = useState<ManagedSiteConfig>(defaultManagedSiteConfig);
+    const [searchKeyword, setSearchKeyword] = useState("");
     const [isEmployerDialogOpen, setIsEmployerDialogOpen] = useState(false);
     const [isSubmittingEmployerRequest, setIsSubmittingEmployerRequest] = useState(false);
     const [employerRequest, setEmployerRequest] = useState<Record<string, string>>({});
     const [recruiterFields, setRecruiterFields] = useState<RecruiterFormField[]>([]);
     const [loadingFields, setLoadingFields] = useState(false);
     const partnerList = managedConfig.partners.length > 0 ? managedConfig.partners : corporatePartners;
-    const midpoint = Math.ceil(partnerList.length / 2);
-    const firstPartnerRow = partnerList.slice(0, midpoint);
-    const secondPartnerRow = partnerList.slice(midpoint);
-    const partnerRows = [
-        { partners: firstPartnerRow, reverse: false },
-        { partners: secondPartnerRow, reverse: true },
-    ].filter((row) => row.partners.length > 0);
-    const featuredJobs = [
-        {
-            id: 1,
-            title: t("home.featuredJobs.frontend.title"),
-            company: "ASL",
-            location: t("home.featuredJobs.frontend.location"),
-            type: t("home.featuredJobs.frontend.type"),
-            salary: t("home.featuredJobs.frontend.salary"),
-        },
-        {
-            id: 2,
-            title: t("home.featuredJobs.sales.title"),
-            company: "Binemo",
-            location: t("home.featuredJobs.sales.location"),
-            type: t("home.featuredJobs.sales.type"),
-            salary: t("home.featuredJobs.sales.salary"),
-        },
-        {
-            id: 3,
-            title: t("home.featuredJobs.data.title"),
-            company: "CP Group",
-            location: t("home.featuredJobs.data.location"),
-            type: t("home.featuredJobs.data.type"),
-            salary: t("home.featuredJobs.data.salary"),
-        },
-    ];
+    // split partners into multiple horizontal rows to increase vertical height
+    const rowsCount = 4;
+    const itemsPerRow = Math.max(1, Math.ceil(partnerList.length / rowsCount));
+    const partnerRows = Array.from({ length: rowsCount })
+        .map((_, idx) => {
+            const start = idx * itemsPerRow;
+            const partners = partnerList.slice(start, start + itemsPerRow);
+            return { partners, reverse: idx % 2 === 1 };
+        })
+        .filter((row) => row.partners.length > 0);
 
     useEffect(() => {
         let mounted = true;
@@ -164,19 +141,25 @@ const Home: React.FC = () => {
         }
     };
 
+    const submitHeroSearch = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const keyword = searchKeyword.trim();
+        navigate(keyword ? `/jobs?keyword=${encodeURIComponent(keyword)}` : "/jobs");
+    };
+
     return (
         <div className="min-h-screen bg-background">
             {/* Hero: Job search */}
             <section id="trang-chu" className="relative scroll-mt-24 overflow-hidden py-20">
                 <div
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat hero-bg-zoom"
                     style={{ backgroundImage: `url(${mscBackground})` }}
                     aria-hidden="true"
                 />
                 <div className="absolute inset-0 bg-white/75" aria-hidden="true" />
                 <div className="absolute inset-0 bg-primary/10" aria-hidden="true" />
 
-                <div className="relative z-10 container mx-auto px-4 text-center">
+                <div className="relative z-10 container mx-auto px-4 text-center flex flex-col items-center justify-center min-h-[420px] md:min-h-[520px]">
                     <div className="mb-6">
                         <h1 className="text-5xl md:text-7xl font-extrabold mb-2 text-primary">
                             InternHiring
@@ -189,57 +172,71 @@ const Home: React.FC = () => {
                     <p className="text-lg text-black mb-8 max-w-3xl mx-auto">
                         {t("home.heroDescription")}
                     </p>
+                </div>
+            </section>
 
-                    <div className="max-w-3xl mx-auto">
-                        <div className="bg-white rounded-lg shadow-md p-4 flex gap-2 items-center">
-                            <div className="flex-1">
-                                <input
-                                    aria-label={t("home.searchAria")}
-                                    className="w-full h-12 px-4 rounded-md border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
-                                    placeholder={t("home.searchPlaceholder")}
-                                />
+            {/* Featured Jobs */}
+            {/* About / Introduction */}
+            <section id="gioi-thieu" className="scroll-mt-24 py-12 bg-white">
+                <div className="container mx-auto px-4">
+                    <div className="max-w-4xl mx-auto text-center mb-6">
+                        <h2 className="text-3xl md:text-4xl font-bold mb-2">{t("home.aboutTitle")}</h2>
+                        <p className="text-lg text-muted-foreground mb-4">{t("home.aboutIntro")}</p>
+                        <p className="text-sm text-muted-foreground">{t("home.aboutIntroLong")}</p>
+                    </div>
+
+                    <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="rounded-xl p-[1px] bg-gradient-to-br from-primary-light to-primary">
+                            <div className="bg-card rounded-lg p-6 relative border border-primary/20">
+                                <div className="absolute -top-6 left-6 inline-flex items-center justify-center h-12 w-12 rounded-full bg-white text-primary shadow-md ring-1 ring-primary/10 z-10">
+                                    <Briefcase className="h-6 w-6" />
+                                </div>
+                                <div className="pt-8">
+                                    <h3 className="text-lg font-semibold mb-2">{t("home.aboutCardProjectTitle")}</h3>
+                                    <p className="text-sm text-muted-foreground">{t("home.aboutCardProjectBody")}</p>
+                                </div>
                             </div>
-                            <Button variant="cta" className="h-12 px-4">
-                                <Search className="mr-2 h-4 w-4" />
-                                {t("home.searchButton")}
-                            </Button>
+                        </div>
+
+                        <div className="rounded-xl p-[1px] bg-gradient-to-br from-primary-light to-primary">
+                            <div className="bg-card rounded-lg p-6 relative border border-primary/20">
+                                <div className="absolute -top-6 left-6 inline-flex items-center justify-center h-12 w-12 rounded-full bg-white text-primary shadow-md ring-1 ring-primary/10 z-10">
+                                    <Users className="h-6 w-6" />
+                                </div>
+                                <div className="pt-8">
+                                    <h3 className="text-lg font-semibold mb-2">{t("home.aboutMissionTitle")}</h3>
+                                    <p className="text-sm text-muted-foreground">{t("home.aboutMission")}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="rounded-xl p-[1px] bg-gradient-to-br from-primary-light to-primary">
+                            <div className="bg-card rounded-lg p-6 relative border border-primary/20">
+                                <div className="absolute -top-6 left-6 inline-flex items-center justify-center h-12 w-12 rounded-full bg-white text-primary shadow-md ring-1 ring-primary/10 z-10">
+                                    <Award className="h-6 w-6" />
+                                </div>
+                                <div className="pt-8">
+                                    <h3 className="text-lg font-semibold mb-2">{t("home.aboutValuesTitle")}</h3>
+                                    <p className="text-sm text-muted-foreground">{t("home.aboutValues")}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* Featured Jobs */}
-            <section className="py-16">
+            <section id="viec-lam-noi-bat" className="scroll-mt-24 py-16">
                 <div className="container mx-auto px-4">
-                    <div id="tim-kiem" className="mb-8 scroll-mt-24">
-                        <JobSearchFilters options={managedConfig.filters} />
-                    </div>
-
-                    <div id="viec-lam" className="flex scroll-mt-24 items-center justify-between mb-6">
+                    <div className="flex items-center justify-between mb-6">
                         <h2 className="text-2xl font-bold">{t("home.featuredJobsTitle")}</h2>
-                        <Button variant="link" size="sm">{t("home.viewAll")} <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                        <Button variant="cta" size="lg" className="flex items-center gap-2" onClick={() => navigate("/jobs")}>{t("home.viewAll")} <ArrowRight className="ml-1 h-4 w-4" /></Button>
                     </div>
-                    <div className="grid md:grid-cols-3 gap-4">
-                        {featuredJobs.map((job) => (
-                            <Card key={job.id} className="p-4">
-                                <CardContent className="p-0">
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <h3 className="font-semibold text-lg">{job.title}</h3>
-                                            <p className="text-sm text-muted-foreground">{job.company} - {job.location}</p>
-                                            <div className="mt-3 flex gap-2">
-                                                <span className="text-xs px-3 py-1 bg-muted rounded-full">{job.type}</span>
-                                                <span className="text-xs px-3 py-1 bg-muted rounded-full">{job.salary}</span>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <Button variant="outline" size="sm">{t("home.apply")}</Button>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                    <Card>
+                        <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                            {t("home.featuredJobsEmpty")}
+                        </CardContent>
+                    </Card>
                 </div>
             </section>
 

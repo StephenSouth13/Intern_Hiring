@@ -8,6 +8,7 @@ import { AlertTriangle } from "lucide-react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/ui/Navbar";
 import Home from "./pages/Home";
+import Jobs from "./pages/Jobs";
 import Auth from "./pages/Auth";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -67,6 +68,7 @@ const App = () => (
           <RestrictedAccountBanner />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/jobs" element={<Jobs />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

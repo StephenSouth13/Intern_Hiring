@@ -59,6 +59,8 @@
     "register": "Đăng ký",
     "admin": "Quản trị viên",
     "search": "Tìm kiếm",
+    "about": "Giới thiệu",
+    "featured": "Nổi bật",
     "jobs": "Việc làm",
     "partners": "Đối tác",
     "recruitment": "Tuyển dụng"
@@ -127,7 +129,17 @@
     "searchAria": "Tìm kiếm công việc",
     "searchPlaceholder": "Ví dụ: Frontend, Data, Sales...",
     "searchButton": "Tìm kiếm",
+    "aboutTitle": "Giới thiệu dự án",
+    "aboutIntro": "Đây là dự án thực tập của nhóm sinh viên Trường Đại học Bách Khoa TP.HCM (HCMUT) và Đại học Sài Gòn (SGU) khi làm việc tại doanh nghiệp MSC Center. Lấy cảm hứng từ LinkedIn và TopCV, InternHiring được triển khai nhằm hỗ trợ người dùng tìm kiếm cơ hội việc làm, đặc biệt là các vị trí thực tập cho sinh viên Việt Nam, thông qua nền tảng web song ngữ, thân thiện.",
+    "aboutIntroLong": "InternHiring được phát triển trong khuôn khổ thực tập hợp tác cùng MSC Center bởi sinh viên HCMUT và SGU. Nền tảng được lấy cảm hứng từ các dịch vụ nghề nghiệp như LinkedIn và TopCV, tập trung vào các tính năng thực tiễn: giao diện song ngữ, xác thực nhà tuyển dụng, hiển thị đối tác, và danh sách việc làm/tuyển dụng được tuyển chọn để hỗ trợ sinh viên tìm cơ hội phù hợp.",
+    "aboutCardProjectTitle": "Dự án",
+    "aboutCardProjectBody": "Dự án thực tập được thực hiện tại MSC Center bởi nhóm sinh viên Trường Đại học Bách Khoa TP.HCM (HCMUT) và Đại học Sài Gòn (SGU).",
+    "aboutMissionTitle": "Sứ mệnh",
+    "aboutMission": "Kết nối sinh viên và doanh nghiệp, đơn giản hóa việc tìm kiếm thực tập và hỗ trợ phát triển nghề nghiệp bằng việc cung cấp nền tảng song ngữ đáng tin cậy và dễ dùng.",
+    "aboutValuesTitle": "Giá trị cốt lõi",
+    "aboutValues": "Tiếp cận, hợp tác và hiệu quả thực tế — thiết kế hướng tới sinh viên và doanh nghiệp, ưu tiên tính hữu dụng và trải nghiệm thực tế.",
     "featuredJobsTitle": "Việc làm nổi bật",
+    "featuredJobsEmpty": "Việc làm nổi bật sẽ được lấy từ dữ liệu lượt xem trong bản cập nhật sau.",
     "viewAll": "Xem tất cả",
     "apply": "Nộp hồ sơ",
     "partnersTitle": "Đối tác & Tập đoàn",
@@ -136,26 +148,6 @@
     "recruiterCtaTitle": "Bạn là nhà tuyển dụng? Hãy tiến hành xác thực với chúng tôi.",
     "recruiterCtaButton": "Yêu cầu xác thực",
     "footer": "© 2026 InternHiring MSC Center. All rights reserved.",
-    "featuredJobs": {
-      "frontend": {
-        "title": "Thực tập Frontend Developer",
-        "location": "Hồ Chí Minh",
-        "type": "Thực tập",
-        "salary": "Thỏa thuận"
-      },
-      "sales": {
-        "title": "Junior Sales Executive",
-        "location": "Hà Nội",
-        "type": "Part-time",
-        "salary": "6-8 triệu"
-      },
-      "data": {
-        "title": "Data Analyst Intern",
-        "location": "Remote",
-        "type": "Thực tập",
-        "salary": "Thỏa thuận"
-      }
-    },
     "employerRequest": {
       "loginRequired": "Vui lòng đăng nhập trước khi gửi yêu cầu xác thực nhà tuyển dụng.",
       "loadFormError": "Không thể tải cấu hình form.",
@@ -169,6 +161,17 @@
     }
   },
   "jobs": {
+    "page": {
+      "title": "Việc làm",
+      "description": "Tìm kiếm và xem toàn bộ bài đăng việc làm do nhà tuyển dụng gửi lên.",
+      "resultsTitle": "Việc làm hiện có",
+      "count": "{{count}} việc làm",
+      "loadError": "Không thể tải việc làm từ Supabase.",
+      "emptyTitle": "Không tìm thấy việc làm",
+      "emptyDescription": "Hãy thử điều chỉnh bộ lọc hoặc quay lại sau.",
+      "untitled": "Việc làm chưa có tiêu đề",
+      "notProvided": "Chưa cung cấp"
+    },
     "filters": {
       "title": "Bộ lọc tìm kiếm",
       "all": "Tất cả",
@@ -181,6 +184,14 @@
       "district": "Quận/Huyện",
       "ward": "Phường/Xã",
       "wardPlaceholder": "Chọn quận/huyện trước",
+      "locationMap": {
+        "label": "Vị trí Google Maps",
+        "placeholder": "Tìm hoặc chọn vị trí trên bản đồ",
+        "clear": "Xóa",
+        "hint": "Tìm địa điểm, bấm vào bản đồ, hoặc kéo marker để lọc việc làm theo vị trí.",
+        "missingKey": "Thêm VITE_GOOGLE_MAPS_API_KEY vào .env để bật Google Maps.",
+        "loadError": "Không thể tải Google Maps."
+      },
       "company": "Công ty",
       "minOpenings": "Số lượng tuyển tối thiểu",
       "minSalary": "Mức lương tối thiểu",

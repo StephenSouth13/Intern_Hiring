@@ -59,6 +59,8 @@
     "register": "Register",
     "admin": "Admin",
     "search": "Search",
+    "about": "About",
+    "featured": "Featured",
     "jobs": "Jobs",
     "partners": "Partners",
     "recruitment": "Recruitment"
@@ -127,7 +129,17 @@
     "searchAria": "Search jobs",
     "searchPlaceholder": "Example: Frontend, Data, Sales...",
     "searchButton": "Search",
+    "aboutTitle": "About this project",
+    "aboutIntro": "This is an internship project by students from Ho Chi Minh University of Technology (HCMUT) and Saigon University (SGU) working at MSC Center. Inspired by LinkedIn and TopCV, InternHiring aims to help users find job opportunities, especially internships for Vietnamese students, through a simple bilingual web platform.",
+    "aboutIntroLong": "InternHiring was developed during an industry-affiliated internship at MSC Center by students from HCMUT and SGU. The platform takes inspiration from established career services like LinkedIn and TopCV and focuses on practical features: a bilingual UI, employer verification, partner showcases, and curated internship listings to help students discover relevant opportunities.",
+    "aboutCardProjectTitle": "The Project",
+    "aboutCardProjectBody": "A student-built internship project developed at MSC Center by teams from Ho Chi Minh University of Technology (HCMUT) and Saigon University (SGU).",
+    "aboutMissionTitle": "Mission",
+    "aboutMission": "To connect students and employers, simplify internship discovery, and support career development by delivering a reliable, easy-to-use bilingual platform.",
+    "aboutValuesTitle": "Our Values",
+    "aboutValues": "Accessibility, collaboration, and practical impact — we design with students and employers in mind, prioritizing usability and real-world usefulness.",
     "featuredJobsTitle": "Featured jobs",
+    "featuredJobsEmpty": "Featured jobs will be populated from job view analytics in a future update.",
     "viewAll": "View all",
     "apply": "Apply",
     "partnersTitle": "Partners & Corporations",
@@ -136,26 +148,6 @@
     "recruiterCtaTitle": "Are you a recruiter? Verify with us to continue.",
     "recruiterCtaButton": "Request verification",
     "footer": "© 2026 InternHiring MSC Center. All rights reserved.",
-    "featuredJobs": {
-      "frontend": {
-        "title": "Frontend Developer Intern",
-        "location": "Ho Chi Minh City",
-        "type": "Internship",
-        "salary": "Negotiable"
-      },
-      "sales": {
-        "title": "Junior Sales Executive",
-        "location": "Hanoi",
-        "type": "Part-time",
-        "salary": "6-8 million"
-      },
-      "data": {
-        "title": "Data Analyst Intern",
-        "location": "Remote",
-        "type": "Internship",
-        "salary": "Negotiable"
-      }
-    },
     "employerRequest": {
       "loginRequired": "Please log in before sending a recruiter verification request.",
       "loadFormError": "Could not load form configuration.",
@@ -169,6 +161,17 @@
     }
   },
   "jobs": {
+    "page": {
+      "title": "Jobs",
+      "description": "Search and browse all job posts submitted by recruiters.",
+      "resultsTitle": "Available jobs",
+      "count": "{{count}} jobs",
+      "loadError": "Could not load jobs from Supabase.",
+      "emptyTitle": "No jobs found",
+      "emptyDescription": "Try adjusting your filters or check back later.",
+      "untitled": "Untitled job",
+      "notProvided": "Not provided"
+    },
     "filters": {
       "title": "Search filters",
       "all": "All",
@@ -181,6 +184,14 @@
       "district": "District",
       "ward": "Ward",
       "wardPlaceholder": "Select district first",
+      "locationMap": {
+        "label": "Google Maps location",
+        "placeholder": "Search or pick a location on the map",
+        "clear": "Clear",
+        "hint": "Search for a place, click the map, or drag the marker to filter jobs by location.",
+        "missingKey": "Set VITE_GOOGLE_MAPS_API_KEY in .env to enable Google Maps.",
+        "loadError": "Could not load Google Maps."
+      },
       "company": "Company",
       "minOpenings": "Minimum openings",
       "minSalary": "Minimum salary",

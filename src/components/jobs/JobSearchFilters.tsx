@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp, RotateCcw, SlidersHorizontal } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { GoogleMapsLocationFilter } from "./GoogleMapsLocationFilter";
 import {
   Select,
   SelectContent,
@@ -146,10 +147,10 @@ export function JobSearchFilters({
             </div>
 
             <SelectFilter
-              label={t("jobs.filters.city")}
-              value={filterValue.city}
-              options={filterOptions.cities}
-              onChange={(nextValue) => updateValue("city", nextValue)}
+              label={t("jobs.filters.company")}
+              value={filterValue.company}
+              options={filterOptions.companies}
+              onChange={(nextValue) => updateValue("company", nextValue)}
             />
 
             <SelectFilter
@@ -187,6 +188,13 @@ export function JobSearchFilters({
           {isAdvancedOpen && (
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               <SelectFilter
+                label={t("jobs.filters.city")}
+                value={filterValue.city}
+                options={filterOptions.cities}
+                onChange={(nextValue) => updateValue("city", nextValue)}
+              />
+
+              <SelectFilter
                 label={t("jobs.filters.district")}
                 value={filterValue.district}
                 options={filterOptions.districts}
@@ -202,12 +210,12 @@ export function JobSearchFilters({
                 onChange={(nextValue) => updateValue("ward", nextValue)}
               />
 
-              <SelectFilter
-                label={t("jobs.filters.company")}
-                value={filterValue.company}
-                options={filterOptions.companies}
-                onChange={(nextValue) => updateValue("company", nextValue)}
-              />
+              <div className="md:col-span-2 xl:col-span-4">
+                <GoogleMapsLocationFilter
+                  value={filterValue.location}
+                  onChange={(nextValue) => updateValue("location", nextValue)}
+                />
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="job-min-openings-filter">{t("jobs.filters.minOpenings")}</Label>

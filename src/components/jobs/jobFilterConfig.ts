@@ -22,6 +22,7 @@ export type JobFilterValue = {
   jobType: string;
   district: string;
   ward: string;
+  location: string;
   company: string;
   minOpenings: string;
   minSalary: string;
@@ -35,6 +36,7 @@ export const emptyJobFilterValue: JobFilterValue = {
   jobType: "",
   district: "",
   ward: "",
+  location: "",
   company: "",
   minOpenings: "",
   minSalary: "",
