@@ -1,4 +1,3 @@
-import { supabase } from "@/lib/supabase";
 import { defaultJobFilterOptions, type JobFilterOptions, type JobFilterOption } from "@/components/jobs/jobFilterConfig";
 
 export type ManagedPartner = {
@@ -93,8 +92,6 @@ export const defaultManagedSiteConfig: ManagedSiteConfig = {
 };
 
 const STORAGE_KEY = "intern_hiring_managed_site_config";
-const CONFIG_KEY = "managed_site_config";
-const CONFIG_TABLES = ["site_settings", "admin_settings"];
 
 const mergeFilterOptions = (incoming?: Partial<JobFilterOptions>): JobFilterOptions => {
   const merged = { ...defaultJobFilterOptions };
@@ -128,21 +125,6 @@ const readLocalConfig = () => {
 
 export const loadManagedSiteConfig = async (): Promise<ManagedSiteConfig> => {
   if (typeof window === "undefined") return defaultManagedSiteConfig;
-
-  for (const tableName of CONFIG_TABLES) {
-    const { data, error } = await supabase
-      .from(tableName)
-      .select("value")
-      .eq("key", CONFIG_KEY)
-      .maybeSingle();
-
-    if (!error && data?.value) {
-      const config = normalizeManagedSiteConfig(data.value as Partial<ManagedSiteConfig>);
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-      return config;
-    }
-  }
-
   return readLocalConfig();
 };
 
@@ -151,14 +133,6 @@ export const saveManagedSiteConfig = async (config: ManagedSiteConfig) => {
 
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
   window.dispatchEvent(new CustomEvent("managed-site-config-updated", { detail: normalized }));
-
-  for (const tableName of CONFIG_TABLES) {
-    const { error } = await supabase
-      .from(tableName)
-      .upsert({ key: CONFIG_KEY, value: normalized }, { onConflict: "key" });
-
-    if (!error) return normalized;
-  }
 
   return normalized;
 };
