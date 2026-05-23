@@ -186,11 +186,11 @@
       "wardPlaceholder": "Select district first",
       "locationMap": {
         "label": "Google Maps location",
-        "placeholder": "Search or pick a location on the map",
+        "placeholder": "Enter a city, district, or address",
+        "search": "Search",
         "clear": "Clear",
-        "hint": "Search for a place, click the map, or drag the marker to filter jobs by location.",
-        "missingKey": "Set VITE_GOOGLE_MAPS_API_KEY in .env to enable Google Maps.",
-        "loadError": "Could not load Google Maps."
+        "hint": "Enter a location and press Search to update the embedded Google Map and filter jobs by location.",
+        "iframeTitle": "Embedded Google Map"
       },
       "company": "Company",
       "minOpenings": "Minimum openings",
@@ -231,9 +231,11 @@
     "first_name": "First Name",
     "phone": "Phone Number",
     "gender_label": "Gender",
+    "dob": "Date of birth",
     "select": "Select",
     "email": "Email",
     "change_password": "Change Password",
+    "current_password": "Current Password",
     "new_password": "New Password",
     "confirm_password": "Confirm Password",
     "cv_title": "Resume",
@@ -243,6 +245,8 @@
     "lastNamePlaceholder": "Enter last name",
     "firstNamePlaceholder": "Enter first name",
     "phonePlaceholder": "Enter phone number",
+    "dobPlaceholder": "dd/mm/yyyy",
+    "dobFormatError": "Please enter the date of birth in dd/mm/yyyy format",
     "uploading": "Uploading...",
     "resumeTypeError": "Only PDF/DOC/DOCX files are accepted",
     "resumeSizeError": "File must not exceed 10MB",
@@ -255,6 +259,8 @@
     "profileUpdateSuccess": "Personal information updated",
     "profileUpdateError": "Could not update profile",
     "passwordChanged": "Password changed",
+    "currentPasswordRequired": "Please enter your current password",
+    "currentPasswordInvalid": "Current password is incorrect",
     "passwordChangeError": "Could not change password"
   },
   "avatarCrop": {

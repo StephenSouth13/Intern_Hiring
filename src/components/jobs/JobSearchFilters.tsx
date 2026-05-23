@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp, RotateCcw, SlidersHorizontal } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GoogleMapsLocationFilter } from "./GoogleMapsLocationFilter";
+import { GoogleMapsEmbedLocationFilter } from "./GoogleMapsEmbedLocationFilter";
 import {
   Select,
   SelectContent,
@@ -38,6 +38,16 @@ type SelectFilterProps = {
 };
 
 const ALL_VALUE = "__all__";
+
+const getOptionLabel = (
+  options: JobFilterOption[],
+  selectedValue: string,
+  translate: (key: string) => string,
+) => {
+  const option = options.find((item) => item.value === selectedValue);
+  if (!option) return "";
+  return option.labelKey ? translate(option.labelKey) : option.label;
+};
 
 function SelectFilter({
   label,
@@ -96,6 +106,13 @@ export function JobSearchFilters({
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const filterValue = value ?? internalValue;
   const filterOptions = { ...defaultJobFilterOptions, ...options };
+  const selectedAreaQuery = [
+    getOptionLabel(filterOptions.wards, filterValue.ward, t),
+    getOptionLabel(filterOptions.districts, filterValue.district, t),
+    getOptionLabel(filterOptions.cities, filterValue.city, t),
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   const updateValue = (field: keyof JobFilterValue, nextValue: string) => {
     const nextFilterValue = { ...filterValue, [field]: nextValue };
@@ -211,8 +228,9 @@ export function JobSearchFilters({
               />
 
               <div className="md:col-span-2 xl:col-span-4">
-                <GoogleMapsLocationFilter
+                <GoogleMapsEmbedLocationFilter
                   value={filterValue.location}
+                  areaQuery={selectedAreaQuery}
                   onChange={(nextValue) => updateValue("location", nextValue)}
                 />
               </div>

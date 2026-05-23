@@ -186,11 +186,11 @@
       "wardPlaceholder": "Chọn quận/huyện trước",
       "locationMap": {
         "label": "Vị trí Google Maps",
-        "placeholder": "Tìm hoặc chọn vị trí trên bản đồ",
+        "placeholder": "Nhập thành phố, quận/huyện hoặc địa chỉ",
+        "search": "Tìm kiếm",
         "clear": "Xóa",
-        "hint": "Tìm địa điểm, bấm vào bản đồ, hoặc kéo marker để lọc việc làm theo vị trí.",
-        "missingKey": "Thêm VITE_GOOGLE_MAPS_API_KEY vào .env để bật Google Maps.",
-        "loadError": "Không thể tải Google Maps."
+        "hint": "Nhập vị trí và bấm Tìm kiếm để cập nhật Google Map nhúng và lọc việc làm theo vị trí.",
+        "iframeTitle": "Google Map nhúng"
       },
       "company": "Công ty",
       "minOpenings": "Số lượng tuyển tối thiểu",
@@ -231,9 +231,11 @@
     "first_name": "Tên",
     "phone": "Số điện thoại",
     "gender_label": "Giới tính",
+    "dob": "Ngày sinh",
     "select": "Chọn",
     "email": "Email",
     "change_password": "Đổi mật khẩu",
+    "current_password": "Mật khẩu cũ",
     "new_password": "Mật khẩu mới",
     "confirm_password": "Xác nhận mật khẩu",
     "cv_title": "CV",
@@ -243,6 +245,8 @@
     "lastNamePlaceholder": "Nhập họ",
     "firstNamePlaceholder": "Nhập tên",
     "phonePlaceholder": "Nhập số điện thoại",
+    "dobPlaceholder": "dd/mm/yyyy",
+    "dobFormatError": "Vui lòng nhập ngày sinh theo định dạng dd/mm/yyyy",
     "uploading": "Đang tải lên...",
     "resumeTypeError": "Chỉ chấp nhận PDF/DOC/DOCX",
     "resumeSizeError": "File không được vượt quá 10MB",
@@ -255,6 +259,8 @@
     "profileUpdateSuccess": "Đã cập nhật thông tin cá nhân",
     "profileUpdateError": "Không thể cập nhật",
     "passwordChanged": "Đã đổi mật khẩu",
+    "currentPasswordRequired": "Vui lòng nhập mật khẩu cũ",
+    "currentPasswordInvalid": "Mật khẩu cũ không đúng",
     "passwordChangeError": "Không thể đổi mật khẩu"
   },
   "avatarCrop": {

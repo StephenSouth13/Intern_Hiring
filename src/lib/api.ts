@@ -98,7 +98,7 @@ export type UpdateProfilePayload = {
   phoneNumber?: string;
   avatarUrl?: string;
   gender?: string;
-  dob?: string;
+  dob?: string | null;
   cvUrl?: string;
 };
 

@@ -71,20 +71,20 @@ const Navbar = () => {
       <div className="container mx-auto relative flex h-16 items-center px-4">
 
         {/* LEFT - Logo */}
-        <button type="button" className="flex items-center" onClick={() => scrollToSection()}>
+        <button type="button" className="flex shrink-0 items-center" onClick={() => scrollToSection()}>
           <span className="font-bold text-xl text-primary">
             InternHiring
           </span>
         </button>
 
         {/* CENTER - Menu (desktop) */}
-        <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-10 lg:gap-12">
+        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 xl:flex 2xl:gap-10">
           {navItems.map((item) => (
             <button
               key={"path" in item ? item.path : item.targetId}
               type="button"
               onClick={() => handleNavItem(item)}
-              className="w-28 text-center text-sm font-semibold text-black transition hover:text-primary lg:w-32"
+              className="whitespace-nowrap px-2 text-center text-sm font-semibold text-black transition hover:text-primary"
             >
               {item.label}
             </button>
@@ -92,13 +92,9 @@ const Navbar = () => {
         </div>
 
         {/* RIGHT */}
-        <div className="ml-auto flex items-center gap-3">
-          <div className="hidden md:flex">
-            <LanguageSwitcher />
-          </div>
-
+        <div className="ml-auto flex shrink-0 items-center gap-3">
           {/* DESKTOP AUTH */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden items-center gap-3 xl:flex">
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -152,10 +148,11 @@ const Navbar = () => {
                 </Button>
               </>
             )}
+            <LanguageSwitcher />
           </div>
 
           {/* MOBILE MENU */}
-          <div className="md:hidden">
+          <div className="xl:hidden">
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
