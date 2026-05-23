@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle } from "lucide-react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Navbar from "./components/ui/Navbar";
@@ -41,6 +42,7 @@ const AdminRoute = ({ children }: { children: JSX.Element }) => {
 
 const RestrictedAccountBanner = () => {
   const { restrictedMessage } = useAuth();
+  const { t } = useTranslation();
 
   if (!restrictedMessage) return null;
 
@@ -48,7 +50,7 @@ const RestrictedAccountBanner = () => {
     <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
       <div className="container mx-auto flex items-center gap-2">
         <AlertTriangle className="h-4 w-4" />
-        <span>{restrictedMessage}</span>
+        <span>{t(restrictedMessage)}</span>
       </div>
     </div>
   );

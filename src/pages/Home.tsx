@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,20 +45,15 @@ const corporatePartners = [
     { id: 16, name: "Smar", logo: "/carousel/Smar.webp" },
     { id: 17, name: "Smentor", logo: "/carousel/Smentor.webp" },
     { id: 18, name: "SP", logo: "/carousel/SP.webp" },
-    { id: 19, name: "Tâm Châu", logo: "/carousel/TC.webp" },
+    { id: 19, name: "Tam Chau", logo: "/carousel/TC.webp" },
     { id: 20, name: "VNPT", logo: "/carousel/VNPT.webp" },
     { id: 21, name: "WK", logo: "/carousel/WK.webp" },
     { id: 22, name: "YESCO", logo: "/carousel/YESCO.webp" },
 ];
 
-const featuredJobs = [
-    { id: 1, title: "Thực tập Frontend Developer", company: "ASL", location: "Hồ Chí Minh", type: "Thực tập", salary: "Thỏa thuận" },
-    { id: 2, title: "Junior Sales Executive", company: "Binemo", location: "Hà Nội", type: "Part-time", salary: "6-8 triệu" },
-    { id: 3, title: "Data Analyst Intern", company: "CP Group", location: "Remote", type: "Thực tập", salary: "Thỏa thuận" },
-];
-
 const Home: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { user, token, isAuthenticated } = useAuth();
     const [managedConfig, setManagedConfig] = useState<ManagedSiteConfig>(defaultManagedSiteConfig);
     const [isEmployerDialogOpen, setIsEmployerDialogOpen] = useState(false);
@@ -73,6 +69,32 @@ const Home: React.FC = () => {
         { partners: firstPartnerRow, reverse: false },
         { partners: secondPartnerRow, reverse: true },
     ].filter((row) => row.partners.length > 0);
+    const featuredJobs = [
+        {
+            id: 1,
+            title: t("home.featuredJobs.frontend.title"),
+            company: "ASL",
+            location: t("home.featuredJobs.frontend.location"),
+            type: t("home.featuredJobs.frontend.type"),
+            salary: t("home.featuredJobs.frontend.salary"),
+        },
+        {
+            id: 2,
+            title: t("home.featuredJobs.sales.title"),
+            company: "Binemo",
+            location: t("home.featuredJobs.sales.location"),
+            type: t("home.featuredJobs.sales.type"),
+            salary: t("home.featuredJobs.sales.salary"),
+        },
+        {
+            id: 3,
+            title: t("home.featuredJobs.data.title"),
+            company: "CP Group",
+            location: t("home.featuredJobs.data.location"),
+            type: t("home.featuredJobs.data.type"),
+            salary: t("home.featuredJobs.data.salary"),
+        },
+    ];
 
     useEffect(() => {
         let mounted = true;
@@ -96,7 +118,7 @@ const Home: React.FC = () => {
 
     const openEmployerRequestDialog = async () => {
         if (!isAuthenticated) {
-            toast.error("Vui lòng đăng nhập trước khi gửi yêu cầu xác thực nhà tuyển dụng.");
+            toast.error(t("home.employerRequest.loginRequired"));
             navigate("/login");
             return;
         }
@@ -108,7 +130,7 @@ const Home: React.FC = () => {
             setRecruiterFields(fields);
             setEmployerRequest({});
         } catch (error: unknown) {
-            toast.error(error instanceof Error ? error.message : "Không thể tải cấu hình form.");
+            toast.error(error instanceof Error ? error.message : t("home.employerRequest.loadFormError"));
         } finally {
             setLoadingFields(false);
         }
@@ -120,7 +142,7 @@ const Home: React.FC = () => {
         const requiredMissing = recruiterFields.some((field) => field.required && !employerRequest[field.name]?.trim());
 
         if (requiredMissing) {
-            toast.error("Vui lòng nhập đầy đủ các trường bắt buộc.");
+            toast.error(t("home.employerRequest.requiredMissing"));
             return;
         }
 
@@ -132,11 +154,11 @@ const Home: React.FC = () => {
             }
 
             await recruiterApi.submitApplication(token, formData);
-            toast.success("Đã gửi yêu cầu xác thực nhà tuyển dụng.");
+            toast.success(t("home.employerRequest.success"));
             setEmployerRequest({});
             setIsEmployerDialogOpen(false);
         } catch (error: unknown) {
-            toast.error(error instanceof Error ? error.message : "Không thể gửi yêu cầu xác thực.");
+            toast.error(error instanceof Error ? error.message : t("home.employerRequest.submitError"));
         } finally {
             setIsSubmittingEmployerRequest(false);
         }
@@ -160,26 +182,26 @@ const Home: React.FC = () => {
                             InternHiring
                         </h1>
                         <p className="text-2xl md:text-3xl font-medium text-black">
-                            Kết nối Sinh viên & Doanh nghiệp
+                            {t("home.heroSubtitle")}
                         </p>
                     </div>
 
                     <p className="text-lg text-black mb-8 max-w-3xl mx-auto">
-                        Tìm công việc thực tập, việc làm bán thời gian và cơ hội nghề nghiệp từ các công ty hàng đầu.
+                        {t("home.heroDescription")}
                     </p>
 
                     <div className="max-w-3xl mx-auto">
                         <div className="bg-white rounded-lg shadow-md p-4 flex gap-2 items-center">
                             <div className="flex-1">
                                 <input
-                                    aria-label="Tìm kiếm công việc"
+                                    aria-label={t("home.searchAria")}
                                     className="w-full h-12 px-4 rounded-md border border-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
-                                    placeholder="Ví dụ: Frontend, Data, Sales..."
+                                    placeholder={t("home.searchPlaceholder")}
                                 />
                             </div>
                             <Button variant="cta" className="h-12 px-4">
                                 <Search className="mr-2 h-4 w-4" />
-                                Tìm kiếm
+                                {t("home.searchButton")}
                             </Button>
                         </div>
                     </div>
@@ -194,8 +216,8 @@ const Home: React.FC = () => {
                     </div>
 
                     <div id="viec-lam" className="flex scroll-mt-24 items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold">Việc làm nổi bật</h2>
-                        <Button variant="link" size="sm">Xem tất cả <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                        <h2 className="text-2xl font-bold">{t("home.featuredJobsTitle")}</h2>
+                        <Button variant="link" size="sm">{t("home.viewAll")} <ArrowRight className="ml-2 h-4 w-4" /></Button>
                     </div>
                     <div className="grid md:grid-cols-3 gap-4">
                         {featuredJobs.map((job) => (
@@ -204,14 +226,14 @@ const Home: React.FC = () => {
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <h3 className="font-semibold text-lg">{job.title}</h3>
-                                            <p className="text-sm text-muted-foreground">{job.company} • {job.location}</p>
+                                            <p className="text-sm text-muted-foreground">{job.company} - {job.location}</p>
                                             <div className="mt-3 flex gap-2">
                                                 <span className="text-xs px-3 py-1 bg-muted rounded-full">{job.type}</span>
                                                 <span className="text-xs px-3 py-1 bg-muted rounded-full">{job.salary}</span>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <Button variant="outline" size="sm">Nộp hồ sơ</Button>
+                                            <Button variant="outline" size="sm">{t("home.apply")}</Button>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -226,10 +248,10 @@ const Home: React.FC = () => {
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-8">
                         <h2 className="text-4xl md:text-5xl font-extrabold mb-2 text-primary">
-                            Đối tác & Tập đoàn
+                            {t("home.partnersTitle")}
                         </h2>
                         <p className="text-2xl md:text-3xl font-medium text-black">
-                            Các công ty tuyển dụng hàng đầu
+                            {t("home.partnersSubtitle")}
                         </p>
                     </div>
                     <div className="mt-8 space-y-6 overflow-hidden">
@@ -237,7 +259,7 @@ const Home: React.FC = () => {
                             <div
                                 key={rowIndex}
                                 className="relative overflow-hidden"
-                                aria-label={`Dòng đối tác ${rowIndex + 1}`}
+                                aria-label={t("home.partnerRowAria", { number: rowIndex + 1 })}
                             >
                                 <div className={`partner-marquee ${row.reverse ? "partner-marquee-reverse" : ""}`}>
                                     {[...row.partners, ...row.partners].map((p, index) => {
@@ -266,26 +288,26 @@ const Home: React.FC = () => {
             <section id="tuyen-dung" className="scroll-mt-24 py-16 hero-gradient">
                 <div className="container mx-auto px-4 text-center text-white">
                     <h2 className="text-3xl font-bold mb-4">
-                        Bạn là nhà tuyển dụng? Hãy tiến thành xác thực với chúng tôi.
+                        {t("home.recruiterCtaTitle")}
                     </h2>
                     <div className="flex justify-center mt-6">
-                        <Button variant="secondary" onClick={openEmployerRequestDialog}>Yêu cầu xác thực</Button>
+                        <Button variant="secondary" onClick={openEmployerRequestDialog}>{t("home.recruiterCtaButton")}</Button>
                     </div>
                 </div>
             </section>
 
             <footer className="border-t bg-white py-6">
                 <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-                    © 2026 InternHiring MSC Center. All rights reserved.
+                    {t("home.footer")}
                 </div>
             </footer>
 
             <Dialog open={isEmployerDialogOpen} onOpenChange={setIsEmployerDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Yêu cầu xác thực nhà tuyển dụng</DialogTitle>
+                        <DialogTitle>{t("home.employerRequest.title")}</DialogTitle>
                         <DialogDescription>
-                            Gửi thông tin doanh nghiệp để quản trị viên duyệt quyền nhà tuyển dụng.
+                            {t("home.employerRequest.description")}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
@@ -315,11 +337,11 @@ const Home: React.FC = () => {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsEmployerDialogOpen(false)} disabled={isSubmittingEmployerRequest}>
-                            Hủy
+                            {t("home.employerRequest.cancel")}
                         </Button>
                         <Button onClick={submitEmployerRequest} disabled={isSubmittingEmployerRequest}>
                             {isSubmittingEmployerRequest && <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />}
-                            Gửi yêu cầu
+                            {t("home.employerRequest.submit")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

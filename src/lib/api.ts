@@ -70,12 +70,12 @@ export async function apiRequest<T>(
   return response.json() as Promise<T>;
 }
 
-// ── Auth headers helper ──────────────────────────────────────────────
+// Auth headers helper
 function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}` };
 }
 
-// ── User type shared across API consumers ────────────────────────────
+// User type shared across API consumers
 export type ApiUser = {
   id: string | number;
   email: string;
@@ -102,7 +102,7 @@ export type UpdateProfilePayload = {
   cvUrl?: string;
 };
 
-// ── Auth API ─────────────────────────────────────────────────────────
+// Auth API
 export const authApi = {
   getMe: (token: string) =>
     apiRequest<ApiUser>("/api/auth/me", {
@@ -110,7 +110,7 @@ export const authApi = {
     }),
 };
 
-// ── User API ─────────────────────────────────────────────────────────
+// User API
 export const userApi = {
   updateProfile: (token: string, data: UpdateProfilePayload) =>
     apiRequest<ApiUser>("/api/users/me", {

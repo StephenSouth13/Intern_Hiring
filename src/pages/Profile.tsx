@@ -72,11 +72,11 @@ const Profile = () => {
     // accept pdf/doc/docx
     const allowed = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
     if (!allowed.includes(file.type)) {
-      toast({ title: "Lỗi", description: "Chỉ chấp nhận PDF/DOC/DOCX", variant: "destructive" });
+      toast({ title: t("toast.error"), description: t("profile.resumeTypeError"), variant: "destructive" });
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast({ title: "Lỗi", description: "File không được vượt quá 10MB", variant: "destructive" });
+      toast({ title: t("toast.error"), description: t("profile.resumeSizeError"), variant: "destructive" });
       return;
     }
 
@@ -96,10 +96,10 @@ const Profile = () => {
 
       await userApi.updateProfile(token, { cvUrl });
       await refreshUser();
-      toast({ title: 'Thành công', description: 'Đã tải lên CV' });
+      toast({ title: t("toast.success"), description: t("profile.resumeUploadSuccess") });
     } catch (err: unknown) {
       console.error('Resume upload failed:', err);
-      toast({ title: 'Lỗi', description: getErrorMessage(err, 'Không thể tải CV lên'), variant: 'destructive' });
+      toast({ title: t("toast.error"), description: getErrorMessage(err, t("profile.resumeUploadError")), variant: "destructive" });
     } finally {
       setIsUploadingResume(false);
     }
@@ -147,12 +147,12 @@ const Profile = () => {
       await refreshUser();
       setIsCropDialogOpen(false);
       setCropImageSrc("");
-      toast({ title: "Thành công", description: "Đã cập nhật ảnh đại diện" });
+      toast({ title: t("toast.success"), description: t("profile.avatarUploadSuccess") });
     } catch (err: unknown) {
       console.error("Avatar upload failed:", err);
       toast({
-        title: "Lỗi",
-        description: getErrorMessage(err, "Không thể tải ảnh lên"),
+        title: t("toast.error"),
+        description: getErrorMessage(err, t("profile.avatarUploadError")),
         variant: "destructive",
       });
     } finally {
@@ -166,11 +166,11 @@ const Profile = () => {
 
     // Validate file
     if (!file.type.startsWith("image/")) {
-      toast({ title: "Lỗi", description: "Chỉ chấp nhận file ảnh", variant: "destructive" });
+      toast({ title: t("toast.error"), description: t("profile.avatarTypeError"), variant: "destructive" });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "Lỗi", description: "File không được vượt quá 5MB", variant: "destructive" });
+      toast({ title: t("toast.error"), description: t("profile.avatarSizeError"), variant: "destructive" });
       return;
     }
 
@@ -191,11 +191,11 @@ const Profile = () => {
 
       await refreshUser();
       setIsEditing(false);
-      toast({ title: "Thành công", description: "Đã cập nhật thông tin cá nhân" });
+      toast({ title: t("toast.success"), description: t("profile.profileUpdateSuccess") });
     } catch (err: unknown) {
       toast({
-        title: "Lỗi",
-        description: getErrorMessage(err, "Không thể cập nhật"),
+        title: t("toast.error"),
+        description: getErrorMessage(err, t("profile.profileUpdateError")),
         variant: "destructive",
       });
     } finally {
@@ -205,11 +205,11 @@ const Profile = () => {
 
   const handleChangePassword = async () => {
     if (passwordData.newPassword.length < 6) {
-      toast({ title: "Lỗi", description: "Mật khẩu phải có ít nhất 6 ký tự", variant: "destructive" });
+      toast({ title: t("toast.error"), description: t("validation.passwordMin"), variant: "destructive" });
       return;
     }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast({ title: "Lỗi", description: "Mật khẩu xác nhận không khớp", variant: "destructive" });
+      toast({ title: t("toast.error"), description: t("validation.passwordMismatch"), variant: "destructive" });
       return;
     }
 
@@ -222,11 +222,11 @@ const Profile = () => {
       if (error) throw error;
 
       setPasswordData({ newPassword: "", confirmPassword: "" });
-      toast({ title: "Thành công", description: "Đã đổi mật khẩu" });
+      toast({ title: t("toast.success"), description: t("profile.passwordChanged") });
     } catch (err: unknown) {
       toast({
-        title: "Lỗi",
-        description: getErrorMessage(err, "Không thể đổi mật khẩu"),
+        title: t("toast.error"),
+        description: getErrorMessage(err, t("profile.passwordChangeError")),
         variant: "destructive",
       });
     } finally {
@@ -248,7 +248,7 @@ const Profile = () => {
                   size="icon"
                   onClick={() => navigate(-1)}
                   className="text-muted-foreground"
-                  aria-label="Quay lại"
+                  aria-label={t("profile.back")}
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
@@ -341,10 +341,10 @@ const Profile = () => {
                           <Input
                             value={formData.lastName}
                             onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                            placeholder="Nhập họ"
+                            placeholder={t("profile.lastNamePlaceholder")}
                           />
                         ) : (
-                          <Input value={user.lastName || "—"} disabled className="bg-muted/50" />
+                          <Input value={user.lastName || t("common.emptyValue")} disabled className="bg-muted/50" />
                         )}
                       </div>
 
@@ -356,10 +356,10 @@ const Profile = () => {
                           <Input
                             value={formData.firstName}
                             onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                            placeholder="Nhập tên"
+                            placeholder={t("profile.firstNamePlaceholder")}
                           />
                         ) : (
-                          <Input value={user.firstName || "—"} disabled className="bg-muted/50" />
+                          <Input value={user.firstName || t("common.emptyValue")} disabled className="bg-muted/50" />
                         )}
                       </div>
                     </div>
@@ -373,10 +373,10 @@ const Profile = () => {
                           <Input
                             value={formData.phoneNumber}
                             onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                            placeholder="Nhập số điện thoại"
+                            placeholder={t("profile.phonePlaceholder")}
                           />
                         ) : (
-                          <Input value={user.phoneNumber || "—"} disabled className="bg-muted/50" />
+                          <Input value={user.phoneNumber || t("common.emptyValue")} disabled className="bg-muted/50" />
                         )}
                       </div>
 
@@ -395,7 +395,7 @@ const Profile = () => {
                           </select>
                         ) : (
                           <Input 
-                            value={user.gender ? t(`gender.${user.gender}`) : "—"} 
+                            value={user.gender ? t(`gender.${user.gender}`) : t("common.emptyValue")} 
                             disabled 
                             className="bg-muted/50" 
                           />
@@ -431,7 +431,7 @@ const Profile = () => {
                       className="min-h-[80px] flex items-center justify-center rounded-md border border-dashed border-muted/50 bg-muted/5 px-3 py-6 text-sm text-muted-foreground cursor-pointer text-center"
                     >
                       {isUploadingResume ? (
-                        <div>Đang tải lên...</div>
+                        <div>{t("profile.uploading")}</div>
                       ) : user?.cvUrl ? (
                         <a href={user.cvUrl} target="_blank" rel="noreferrer" className="text-primary underline">
                           {t("profile.view_cv")}

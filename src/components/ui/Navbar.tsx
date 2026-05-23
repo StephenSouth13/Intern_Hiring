@@ -109,7 +109,7 @@ const Navbar = () => {
                 <DropdownMenuContent align="end">
                   {isAdminRole(user?.role) && (
                     <DropdownMenuItem asChild>
-                      <Link to="/admin">Quản trị viên</Link>
+                      <Link to="/admin">{t("nav.admin")}</Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem asChild>
@@ -137,7 +137,7 @@ const Navbar = () => {
                   className="border-primary bg-white text-primary hover:bg-primary/10 hover:text-primary"
                   onClick={() => navigate("/register")}
                 >
-                  Đăng ký
+                  {t("nav.register")}
                 </Button>
               </>
             )}
@@ -176,7 +176,7 @@ const Navbar = () => {
                         {isAdminRole(user?.role) && (
                           <Link to="/admin" className="mb-2 flex items-center gap-2 rounded-md p-2 hover:bg-muted transition">
                             <UserIcon className="h-4 w-4" />
-                            <span className="text-sm font-medium">Quản trị viên</span>
+                            <span className="text-sm font-medium">{t("nav.admin")}</span>
                           </Link>
                         )}
                         <Link to="/profile" className="flex items-center gap-2 mb-2 rounded-md p-2 hover:bg-muted transition">
@@ -192,7 +192,7 @@ const Navbar = () => {
                           onClick={handleLogout}
                           className="w-full"
                         >
-                          Đăng xuất
+                          {t("nav.logout")}
                         </Button>
                       </>
                     ) : (
@@ -202,14 +202,14 @@ const Navbar = () => {
                           className="w-full mb-2 bg-primary text-primary-foreground hover:bg-primary-dark"
                           onClick={() => navigate("/login")}
                         >
-                          Đăng nhập
+                          {t("nav.login")}
                         </Button>
                         <Button
                           variant="outline"
                           className="w-full border-primary bg-white text-primary hover:bg-primary/10 hover:text-primary"
                           onClick={() => navigate("/register")}
                         >
-                          Đăng ký
+                          {t("nav.register")}
                         </Button>
                       </>
                     )}

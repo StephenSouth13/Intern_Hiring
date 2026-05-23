@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,22 +29,34 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Eye, EyeOff, GraduationCap, Loader2, Lock, Mail, Phone, User } from "lucide-react";
 
-const registerSchema = z.object({
-  email: z
-    .string()
-    .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$/, "Email không hợp lệ"),
-  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
-  firstName: z.string().min(2, "Tên quá ngắn"),
-  lastName: z.string().min(2, "Họ quá ngắn"),
-  phoneNumber: z.string().optional(),
-});
+type RegisterFormValues = {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+};
 
 const Register = () => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const registerSchema = useMemo(
+    () =>
+      z.object({
+        email: z
+          .string()
+          .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$/, t("validation.emailInvalid")),
+        password: z.string().min(6, t("validation.passwordMin")),
+        firstName: z.string().min(2, t("validation.firstNameShort")),
+        lastName: z.string().min(2, t("validation.lastNameShort")),
+        phoneNumber: z.string().optional(),
+      }),
+    [t],
+  );
 
-  const form = useForm<z.infer<typeof registerSchema>>({
+  const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       email: "",
@@ -54,7 +67,7 @@ const Register = () => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof registerSchema>) => {
+  const onSubmit = async (values: RegisterFormValues) => {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
@@ -72,11 +85,11 @@ const Register = () => {
 
       if (error) throw error;
 
-      toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
+      toast.success(t("register.success"));
       form.reset();
       navigate("/login");
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Không thể kết nối đến hệ thống");
+      toast.error(error instanceof Error ? error.message : t("auth.systemConnectionError"));
     } finally {
       setIsLoading(false);
     }
@@ -94,13 +107,13 @@ const Register = () => {
           <section className="hidden bg-secondary/70 p-6 md:flex md:flex-col md:justify-between">
             <div>
               <Badge className="mb-4 bg-primary text-primary-foreground">
-                Ứng viên mới
+                {t("register.badge")}
               </Badge>
               <h1 className="text-3xl font-bold leading-tight text-foreground">
-                Tạo hồ sơ để bắt đầu hành trình thực tập
+                {t("register.heroTitle")}
               </h1>
               <p className="mt-4 text-sm leading-6 text-muted-foreground">
-                Đăng ký tài khoản ứng viên để theo dõi chương trình, cập nhật hồ sơ và kết nối với doanh nghiệp phù hợp.
+                {t("register.heroDescription")}
               </p>
             </div>
             <div className="rounded-lg border bg-white p-4 shadow-soft">
@@ -108,10 +121,10 @@ const Register = () => {
                 <GraduationCap className="h-5 w-5" />
               </div>
               <p className="text-sm font-medium text-foreground">
-                Vai trò mặc định của tài khoản mới là ứng viên.
+                {t("register.defaultRole")}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Bạn là nhà tuyển dụng? Sau khi tạo tài khoản, hãy yêu cầu xác thực để được cấp quyền.
+                {t("register.recruiterHint")}
               </p>
             </div>
           </section>
@@ -120,14 +133,14 @@ const Register = () => {
             <CardHeader className="space-y-1 px-5 pb-3 pt-5 sm:px-7">
               <div className="md:hidden">
                 <Badge className="mb-2 bg-primary text-primary-foreground">
-                  Ứng viên mới
+                  {t("register.badge")}
                 </Badge>
               </div>
               <CardTitle className="text-2xl font-bold text-foreground">
-                Đăng ký tài khoản
+                {t("register.title")}
               </CardTitle>
               <CardDescription>
-                Hoàn tất thông tin bên dưới để tạo tài khoản ứng viên.
+                {t("register.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="px-5 pb-3 sm:px-7">
@@ -139,11 +152,11 @@ const Register = () => {
                       name="lastName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Họ</FormLabel>
+                          <FormLabel>{t("profile.last_name")}</FormLabel>
                           <FormControl>
                             <div className="relative">
                               <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                              <Input placeholder="Nguyễn" className="h-9 pl-10" {...field} />
+                              <Input placeholder="Nguyen" className="h-9 pl-10" {...field} />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -155,7 +168,7 @@ const Register = () => {
                       name="firstName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tên</FormLabel>
+                          <FormLabel>{t("profile.first_name")}</FormLabel>
                           <FormControl>
                             <div className="relative">
                               <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -192,7 +205,7 @@ const Register = () => {
                     name="phoneNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Số điện thoại</FormLabel>
+                        <FormLabel>{t("profile.phone")}</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -208,19 +221,19 @@ const Register = () => {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Mật khẩu</FormLabel>
+                        <FormLabel>{t("common.password")}</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                               type={showPassword ? "text" : "password"}
-                              placeholder="Tối thiểu 6 ký tự"
+                              placeholder={t("register.passwordPlaceholder")}
                               className="h-9 pl-10 pr-10"
                               {...field}
                             />
                             <button
                               type="button"
-                              aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                              aria-label={showPassword ? t("login.hidePassword") : t("login.showPassword")}
                               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-primary"
                               onClick={() => setShowPassword((current) => !current)}
                             >
@@ -247,16 +260,16 @@ const Register = () => {
                     ) : (
                       <ArrowRight className="mr-2 h-4 w-4" />
                     )}
-                    Tạo tài khoản
+                    {t("register.submit")}
                   </Button>
                 </form>
               </Form>
             </CardContent>
             <CardFooter className="flex justify-center border-t bg-secondary/40 px-5 py-3 sm:px-7">
               <p className="text-sm text-muted-foreground">
-                Đã có tài khoản?{" "}
+                {t("register.haveAccount")}{" "}
                 <Link to="/login" className="font-medium text-primary hover:underline">
-                  Đăng nhập
+                  {t("register.login")}
                 </Link>
               </p>
             </CardFooter>

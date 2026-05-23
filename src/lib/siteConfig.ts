@@ -24,13 +24,13 @@ export type ManagedSiteConfig = {
 export type FilterCategoryKey = keyof JobFilterOptions;
 
 export const filterCategoryLabels: Record<FilterCategoryKey, string> = {
-  cities: "Tỉnh/Thành phố",
-  workModes: "Hình thức làm việc",
-  jobTypes: "Loại công việc",
-  districts: "Quận/Huyện",
-  wards: "Phường/Xã",
-  companies: "Công ty",
-  currencies: "Đơn vị tiền tệ",
+  cities: "Province/City",
+  workModes: "Work mode",
+  jobTypes: "Job type",
+  districts: "District",
+  wards: "Ward",
+  companies: "Company",
+  currencies: "Currency",
 };
 
 export const defaultCorporatePartners: ManagedPartner[] = [
@@ -52,7 +52,7 @@ export const defaultCorporatePartners: ManagedPartner[] = [
   { id: "smar", name: "Smar", logo: "/carousel/Smar.webp" },
   { id: "smentor", name: "Smentor", logo: "/carousel/Smentor.webp" },
   { id: "sp", name: "SP", logo: "/carousel/SP.webp" },
-  { id: "tc", name: "Tâm Châu", logo: "/carousel/TC.webp" },
+  { id: "tc", name: "Tam Chau", logo: "/carousel/TC.webp" },
   { id: "vnpt", name: "VNPT", logo: "/carousel/VNPT.webp" },
   { id: "wk", name: "WK", logo: "/carousel/WK.webp" },
   { id: "yesco", name: "YESCO", logo: "/carousel/YESCO.webp" },
@@ -62,15 +62,15 @@ export const defaultEmployerVerificationFields: EmployerVerificationField[] = [
   {
     id: "company-name",
     name: "companyName",
-    label: "Tên công ty",
+    label: "Company name",
     type: "text",
-    placeholder: "Công ty TNHH ABC",
+    placeholder: "ABC Company Ltd.",
     required: true,
   },
   {
     id: "company-email",
     name: "companyEmail",
-    label: "Mail công ty",
+    label: "Company email",
     type: "email",
     placeholder: "hr@company.com",
     required: true,
@@ -78,7 +78,7 @@ export const defaultEmployerVerificationFields: EmployerVerificationField[] = [
   {
     id: "tax-code",
     name: "taxCode",
-    label: "Mã số thuế",
+    label: "Tax code",
     type: "text",
     placeholder: "0312345678",
     required: true,
@@ -143,6 +143,7 @@ export const createOptionValue = (label: string) =>
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
+    .replace(/\u0111/g, "d")
+    .replace(/\u0110/g, "d")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");

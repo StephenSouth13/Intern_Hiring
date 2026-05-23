@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronUp, RotateCcw, SlidersHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -41,10 +42,13 @@ function SelectFilter({
   label,
   value,
   options,
-  placeholder = "Tất cả",
+  placeholder,
   disabled,
   onChange,
 }: SelectFilterProps) {
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t("jobs.filters.all");
+
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
@@ -54,14 +58,14 @@ function SelectFilter({
         onValueChange={(nextValue) => onChange(nextValue === ALL_VALUE ? "" : nextValue)}
       >
         <SelectTrigger className="h-12 bg-white transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground">
-          <SelectValue placeholder={placeholder} />
+          <SelectValue placeholder={resolvedPlaceholder} />
         </SelectTrigger>
         <SelectContent>
           <SelectItem
             value={ALL_VALUE}
             className="focus:bg-primary focus:text-primary-foreground"
           >
-            {placeholder}
+            {resolvedPlaceholder}
           </SelectItem>
           {options.map((option) => (
             <SelectItem
@@ -70,7 +74,7 @@ function SelectFilter({
               disabled={option.disabled}
               className="focus:bg-primary focus:text-primary-foreground"
             >
-              {option.label}
+              {option.labelKey ? t(option.labelKey) : option.label}
             </SelectItem>
           ))}
         </SelectContent>
@@ -85,6 +89,7 @@ export function JobSearchFilters({
   onChange,
   onReset,
 }: JobSearchFiltersProps) {
+  const { t } = useTranslation();
   const [internalValue, setInternalValue] = useState<JobFilterValue>(emptyJobFilterValue);
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
@@ -117,7 +122,7 @@ export function JobSearchFilters({
       >
         <span className="flex items-center gap-3">
           <SlidersHorizontal className="h-5 w-5 text-primary" />
-          <span className="text-xl font-semibold text-foreground">Bộ lọc tìm kiếm</span>
+          <span className="text-xl font-semibold text-foreground">{t("jobs.filters.title")}</span>
         </span>
         {isFiltersOpen ? (
           <ChevronUp className="h-5 w-5 text-muted-foreground" />
@@ -130,32 +135,32 @@ export function JobSearchFilters({
         <>
           <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             <div className="space-y-2">
-              <Label htmlFor="job-keyword-filter">Từ khóa</Label>
+              <Label htmlFor="job-keyword-filter">{t("jobs.filters.keyword")}</Label>
               <Input
                 id="job-keyword-filter"
                 value={filterValue.keyword}
                 onChange={(event) => updateValue("keyword", event.target.value)}
-                placeholder="Tên việc, tên công ty..."
+                placeholder={t("jobs.filters.keywordPlaceholder")}
                 className="h-12 bg-white"
               />
             </div>
 
             <SelectFilter
-              label="Tỉnh/Thành phố"
+              label={t("jobs.filters.city")}
               value={filterValue.city}
               options={filterOptions.cities}
               onChange={(nextValue) => updateValue("city", nextValue)}
             />
 
             <SelectFilter
-              label="Hình thức làm việc"
+              label={t("jobs.filters.workMode")}
               value={filterValue.workMode}
               options={filterOptions.workModes}
               onChange={(nextValue) => updateValue("workMode", nextValue)}
             />
 
             <SelectFilter
-              label="Loại công việc"
+              label={t("jobs.filters.jobType")}
               value={filterValue.jobType}
               options={filterOptions.jobTypes}
               onChange={(nextValue) => updateValue("jobType", nextValue)}
@@ -170,7 +175,7 @@ export function JobSearchFilters({
           >
             <span className="flex items-center gap-3">
               <SlidersHorizontal className="h-4 w-4 text-primary" />
-              Tìm kiếm nâng cao
+              {t("jobs.filters.advanced")}
             </span>
             {isAdvancedOpen ? (
               <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -182,30 +187,30 @@ export function JobSearchFilters({
           {isAdvancedOpen && (
             <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
               <SelectFilter
-                label="Quận/Huyện"
+                label={t("jobs.filters.district")}
                 value={filterValue.district}
                 options={filterOptions.districts}
                 onChange={(nextValue) => updateValue("district", nextValue)}
               />
 
               <SelectFilter
-                label="Phường/Xã"
+                label={t("jobs.filters.ward")}
                 value={filterValue.ward}
                 options={filterOptions.wards}
-                placeholder="Chọn quận/huyện trước"
+                placeholder={t("jobs.filters.wardPlaceholder")}
                 disabled={!filterValue.district && filterOptions.wards.length === 0}
                 onChange={(nextValue) => updateValue("ward", nextValue)}
               />
 
               <SelectFilter
-                label="Công ty"
+                label={t("jobs.filters.company")}
                 value={filterValue.company}
                 options={filterOptions.companies}
                 onChange={(nextValue) => updateValue("company", nextValue)}
               />
 
               <div className="space-y-2">
-                <Label htmlFor="job-min-openings-filter">Số lượng tuyển tối thiểu</Label>
+                <Label htmlFor="job-min-openings-filter">{t("jobs.filters.minOpenings")}</Label>
                 <Input
                   id="job-min-openings-filter"
                   value={filterValue.minOpenings}
@@ -218,7 +223,7 @@ export function JobSearchFilters({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="job-min-salary-filter">Mức lương tối thiểu</Label>
+                <Label htmlFor="job-min-salary-filter">{t("jobs.filters.minSalary")}</Label>
                 <Input
                   id="job-min-salary-filter"
                   value={filterValue.minSalary}
@@ -231,7 +236,7 @@ export function JobSearchFilters({
               </div>
 
               <SelectFilter
-                label="Đơn vị tiền tệ"
+                label={t("jobs.filters.currency")}
                 value={filterValue.currency}
                 options={filterOptions.currencies}
                 onChange={(nextValue) => updateValue("currency", nextValue)}
@@ -242,7 +247,7 @@ export function JobSearchFilters({
           <div className="mt-6 flex justify-end">
             <Button type="button" variant="outline" onClick={resetFilters}>
               <RotateCcw className="h-4 w-4" />
-              Đặt lại bộ lọc
+              {t("jobs.filters.reset")}
             </Button>
           </div>
         </>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,12 +13,13 @@ type Props = {
 };
 
 export default function ResetPasswordDialog({ open, onOpenChange }: Props) {
+    const { t } = useTranslation();
     const [email, setEmail] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSend = async () => {
         if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-            toast.error("Vui lòng nhập email hợp lệ");
+            toast.error(t("resetPasswordDialog.invalidEmail"));
             return;
         }
         setIsSubmitting(true);
@@ -25,12 +27,12 @@ export default function ResetPasswordDialog({ open, onOpenChange }: Props) {
             const redirectTo = window.location.origin + "/reset-password"; // redirect to reset-password page after user clicks email link
             const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
             if (error) throw error;
-            toast.success("Một email đặt lại mật khẩu đã được gửi nếu email tồn tại.");
+            toast.success(t("resetPasswordDialog.success"));
             onOpenChange(false);
             setEmail("");
         } catch (err: unknown) {
             console.error("Reset password error:", err);
-            toast.error(err instanceof Error ? err.message : "Không thể gửi email đặt lại mật khẩu");
+            toast.error(err instanceof Error ? err.message : t("resetPasswordDialog.sendError"));
         } finally {
             setIsSubmitting(false);
         }
@@ -40,11 +42,11 @@ export default function ResetPasswordDialog({ open, onOpenChange }: Props) {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Quên mật khẩu</DialogTitle>
+                    <DialogTitle>{t("resetPasswordDialog.title")}</DialogTitle>
                 </DialogHeader>
 
                 <div className="py-2">
-                    <Label>Email đăng nhập</Label>
+                    <Label>{t("resetPasswordDialog.emailLabel")}</Label>
                     <Input
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -52,16 +54,16 @@ export default function ResetPasswordDialog({ open, onOpenChange }: Props) {
                         className="mt-2"
                     />
                     <p className="mt-2 text-sm text-muted-foreground">
-                        Nhập email của bạn, chúng tôi sẽ gửi liên kết để đặt lại mật khẩu nếu email tồn tại.
+                        {t("resetPasswordDialog.description")}
                     </p>
                 </div>
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-                        Hủy
+                        {t("common.cancel")}
                     </Button>
                     <Button onClick={handleSend} disabled={isSubmitting}>
-                        Gửi
+                        {t("common.send")}
                     </Button>
                 </DialogFooter>
             </DialogContent>

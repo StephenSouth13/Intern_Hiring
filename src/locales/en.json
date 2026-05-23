@@ -1,4 +1,42 @@
 {
+  "common": {
+    "appName": "InternHiring",
+    "admin": "Admin",
+    "email": "Email",
+    "password": "Password",
+    "role": "Role",
+    "status": "Status",
+    "actions": "Actions",
+    "company": "Company",
+    "recruiter": "Recruiter",
+    "type": "Type",
+    "salary": "Salary",
+    "description": "Description",
+    "details": "Details",
+    "view": "View",
+    "refresh": "Refresh",
+    "cancel": "Cancel",
+    "close": "Close",
+    "send": "Send",
+    "add": "Add",
+    "submit": "Submit",
+    "processing": "Processing...",
+    "loading": "Loading...",
+    "emptyValue": "-",
+    "required": "Required",
+    "optional": "Optional"
+  },
+  "toast": {
+    "error": "Error",
+    "success": "Success"
+  },
+  "validation": {
+    "emailInvalid": "Invalid email",
+    "passwordMin": "Password must be at least 6 characters",
+    "firstNameShort": "First name is too short",
+    "lastNameShort": "Last name is too short",
+    "passwordMismatch": "Password confirmation does not match"
+  },
   "gender": {
     "MALE": "Male",
     "FEMALE": "Female",
@@ -9,14 +47,169 @@
     "RECRUITER": "Recruiter",
     "ADMIN": "Admin"
   },
+  "language": {
+    "placeholder": "Language",
+    "vi": "Vietnamese",
+    "en": "English"
+  },
   "nav": {
     "profile": "Profile",
     "logout": "Log out",
     "login": "Log in",
+    "register": "Register",
+    "admin": "Admin",
     "search": "Search",
     "jobs": "Jobs",
     "partners": "Partners",
     "recruitment": "Recruitment"
+  },
+  "auth": {
+    "restrictedMessage": "Your account is restricted. Please contact an administrator.",
+    "restrictedLoginError": "Your account is restricted and cannot log in to the system.",
+    "systemConnectionError": "Could not connect to the system"
+  },
+  "login": {
+    "heroTitle": "Welcome back to InternHiring",
+    "heroDescription": "Continue connecting with internship programs, partner companies, and career development opportunities.",
+    "heroSecurity": "Accounts are verified through Supabase Auth and synced with candidate profiles.",
+    "title": "Log in",
+    "description": "Enter your email and password to access your account.",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "forgotPassword": "Forgot password?",
+    "submit": "Log in",
+    "success": "Logged in successfully!",
+    "noAccount": "Don't have an account?",
+    "registerNow": "Register now"
+  },
+  "register": {
+    "badge": "New candidate",
+    "heroTitle": "Create a profile to start your internship journey",
+    "heroDescription": "Register a candidate account to follow programs, update your profile, and connect with suitable companies.",
+    "defaultRole": "New accounts are candidate accounts by default.",
+    "recruiterHint": "Are you a recruiter? After creating an account, request verification to receive permissions.",
+    "title": "Create an account",
+    "description": "Complete the information below to create a candidate account.",
+    "passwordPlaceholder": "At least 6 characters",
+    "submit": "Create account",
+    "success": "Registered successfully! Please log in.",
+    "haveAccount": "Already have an account?",
+    "login": "Log in"
+  },
+  "resetPasswordDialog": {
+    "invalidEmail": "Please enter a valid email",
+    "success": "A password reset email has been sent if the email exists.",
+    "sendError": "Could not send the password reset email",
+    "title": "Forgot password",
+    "emailLabel": "Login email",
+    "description": "Enter your email. We will send a password reset link if the email exists."
+  },
+  "resetPasswordPage": {
+    "title": "Reset password",
+    "expired": "The password reset link has expired. Please send a new request.",
+    "accessDenied": "Access denied. The link is invalid or has expired.",
+    "invalidLink": "The link is invalid. Please send another password reset request.",
+    "missingSession": "No login session was found from the link. Please reopen the link from your email or send another password reset request.",
+    "updateSuccess": "Password has been updated. Please log in again.",
+    "updateError": "Could not update password",
+    "backToLogin": "Back to login",
+    "resendRequest": "Send request again",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "submit": "Update password",
+    "noValidSession": "No valid session is available to reset the password."
+  },
+  "home": {
+    "heroSubtitle": "Connecting Students & Companies",
+    "heroDescription": "Find internships, part-time jobs, and career opportunities from leading companies.",
+    "searchAria": "Search jobs",
+    "searchPlaceholder": "Example: Frontend, Data, Sales...",
+    "searchButton": "Search",
+    "featuredJobsTitle": "Featured jobs",
+    "viewAll": "View all",
+    "apply": "Apply",
+    "partnersTitle": "Partners & Corporations",
+    "partnersSubtitle": "Leading hiring companies",
+    "partnerRowAria": "Partner row {{number}}",
+    "recruiterCtaTitle": "Are you a recruiter? Verify with us to continue.",
+    "recruiterCtaButton": "Request verification",
+    "footer": "© 2026 InternHiring MSC Center. All rights reserved.",
+    "featuredJobs": {
+      "frontend": {
+        "title": "Frontend Developer Intern",
+        "location": "Ho Chi Minh City",
+        "type": "Internship",
+        "salary": "Negotiable"
+      },
+      "sales": {
+        "title": "Junior Sales Executive",
+        "location": "Hanoi",
+        "type": "Part-time",
+        "salary": "6-8 million"
+      },
+      "data": {
+        "title": "Data Analyst Intern",
+        "location": "Remote",
+        "type": "Internship",
+        "salary": "Negotiable"
+      }
+    },
+    "employerRequest": {
+      "loginRequired": "Please log in before sending a recruiter verification request.",
+      "loadFormError": "Could not load form configuration.",
+      "requiredMissing": "Please complete all required fields.",
+      "success": "Recruiter verification request sent.",
+      "submitError": "Could not send verification request.",
+      "title": "Recruiter verification request",
+      "description": "Send company information for administrators to review recruiter permissions.",
+      "cancel": "Cancel",
+      "submit": "Send request"
+    }
+  },
+  "jobs": {
+    "filters": {
+      "title": "Search filters",
+      "all": "All",
+      "keyword": "Keyword",
+      "keywordPlaceholder": "Job title, company name...",
+      "city": "Province/City",
+      "workMode": "Work mode",
+      "jobType": "Job type",
+      "advanced": "Advanced search",
+      "district": "District",
+      "ward": "Ward",
+      "wardPlaceholder": "Select district first",
+      "company": "Company",
+      "minOpenings": "Minimum openings",
+      "minSalary": "Minimum salary",
+      "currency": "Currency",
+      "reset": "Reset filters",
+      "options": {
+        "cities": {
+          "hoChiMinh": "Ho Chi Minh City",
+          "haNoi": "Hanoi",
+          "daNang": "Da Nang",
+          "remote": "Remote"
+        },
+        "workModes": {
+          "onsite": "On-site",
+          "hybrid": "Hybrid",
+          "remote": "Remote"
+        },
+        "jobTypes": {
+          "internship": "Internship",
+          "partTime": "Part-time",
+          "fullTime": "Full-time"
+        },
+        "districts": {
+          "district1": "District 1",
+          "district3": "District 3",
+          "thuDuc": "Thu Duc City"
+        }
+      }
+    }
   },
   "profile": {
     "personal_info": "Personal Information",
@@ -34,6 +227,150 @@
     "confirm_password": "Confirm Password",
     "cv_title": "Resume",
     "view_cv": "View current Resume",
-    "drag_drop_cv": "Drag and drop file here or click to select (PDF / DOC / DOCX)"
+    "drag_drop_cv": "Drag and drop file here or click to select (PDF / DOC / DOCX)",
+    "back": "Go back",
+    "lastNamePlaceholder": "Enter last name",
+    "firstNamePlaceholder": "Enter first name",
+    "phonePlaceholder": "Enter phone number",
+    "uploading": "Uploading...",
+    "resumeTypeError": "Only PDF/DOC/DOCX files are accepted",
+    "resumeSizeError": "File must not exceed 10MB",
+    "resumeUploadSuccess": "Resume uploaded",
+    "resumeUploadError": "Could not upload resume",
+    "avatarUploadSuccess": "Avatar updated",
+    "avatarUploadError": "Could not upload image",
+    "avatarTypeError": "Only image files are accepted",
+    "avatarSizeError": "File must not exceed 5MB",
+    "profileUpdateSuccess": "Personal information updated",
+    "profileUpdateError": "Could not update profile",
+    "passwordChanged": "Password changed",
+    "passwordChangeError": "Could not change password"
+  },
+  "avatarCrop": {
+    "title": "Crop avatar",
+    "zoom": "Zoom",
+    "submit": "Crop & Update"
+  },
+  "admin": {
+    "loadError": "Could not load admin data.",
+    "restrictionSetSuccess": "Account restricted.",
+    "restrictionRemovedSuccess": "Account restriction removed.",
+    "restrictionForbidden": "You do not have permission to update this account restriction.",
+    "restrictionUpdateError": "Could not update restriction status.",
+    "trashJobSuccess": "Job post moved to trash.",
+    "trashJobError": "Could not move job post to trash.",
+    "restoreJobSuccess": "Job post restored.",
+    "restoreJobError": "Could not restore job post.",
+    "deleteJobConfirm": "Permanently delete this job post from trash?",
+    "deleteJobSuccess": "Job post permanently deleted.",
+    "deleteJobError": "Could not permanently delete job post.",
+    "approveRecruiterSuccess": "Recruiter approved.",
+    "rejectRequestSuccess": "Request rejected.",
+    "reviewRequestError": "Could not process request.",
+    "title": "Admin dashboard",
+    "description": "Manage accounts, job posts, and recruiter verification requests.",
+    "stats": {
+      "usersTitle": "All users",
+      "usersDescription": "Click to view account list",
+      "jobsTitle": "Job posts",
+      "trashCount": "{{count}} posts in trash",
+      "requestsTitle": "Review recruiters",
+      "requestsDescription": "Requests pending review",
+      "categoriesTitle": "Manage categories",
+      "categoriesDescription": "Categories & verification form"
+    },
+    "users": {
+      "title": "User account list",
+      "fullName": "Full name",
+      "restricted": "Restricted",
+      "active": "Active",
+      "restrict": "Restrict",
+      "unrestrict": "Remove restriction"
+    },
+    "jobs": {
+      "title": "Manage job posts",
+      "activeTab": "Visible",
+      "trashTab": "Trash",
+      "titleColumn": "Title",
+      "postedDate": "Posted date",
+      "deletedDate": "Deleted date",
+      "moveToTrash": "Move to trash",
+      "restore": "Restore",
+      "deletePermanent": "Delete permanently"
+    },
+    "requests": {
+      "title": "Review recruiter verification requests",
+      "empty": "No requests yet.",
+      "applicantEmail": "Candidate email",
+      "registrationInfo": "Registration information",
+      "note": "Note",
+      "approve": "Approve",
+      "reject": "Reject",
+      "statuses": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      }
+    },
+    "userDialog": {
+      "title": "User profile",
+      "description": "Detailed information for the selected account.",
+      "phone": "Phone number",
+      "gender": "Gender",
+      "dob": "Date of birth",
+      "createdAt": "Created date",
+      "cv": "Resume",
+      "viewCv": "View resume"
+    },
+    "jobDialog": {
+      "title": "Job post details",
+      "description": "Information submitted by the recruiter.",
+      "location": "Location"
+    },
+    "rejectDialog": {
+      "title": "Reject request",
+      "description": "Enter the rejection reason to save it on the request.",
+      "placeholder": "Example: Company information is not valid",
+      "warning": "Rejected requests will not change the user's role."
+    },
+    "categories": {
+      "loadError": "Could not load category data.",
+      "missingOption": "Please enter a category name.",
+      "addOptionSuccess": "Category added.",
+      "addOptionError": "Could not add category.",
+      "deleteOptionSuccess": "Category deleted.",
+      "deleteOptionError": "Could not delete category.",
+      "missingField": "Please enter a field label.",
+      "addFieldSuccess": "Form field added.",
+      "addFieldError": "Could not add form field.",
+      "deleteFieldSuccess": "Form field deleted.",
+      "deleteFieldError": "Could not delete form field.",
+      "title": "Manage categories",
+      "summary": "{{options}} categories, {{fields}} form fields - data from backend",
+      "filtersTab": "Search filters",
+      "verificationTab": "Verification form",
+      "categoryGroup": "Category group",
+      "displayName": "Display name",
+      "value": "Value",
+      "autoValuePlaceholder": "Auto-generated if left blank",
+      "empty": "No categories yet.",
+      "deleteOptionAria": "Delete {{label}}",
+      "fieldLabel": "Field label",
+      "fieldLabelPlaceholder": "Example: Company website",
+      "fieldName": "Field name",
+      "fieldType": "Type",
+      "placeholder": "Placeholder",
+      "storageName": "Storage name",
+      "newFieldsHint": "New fields will appear in the verification request form on the home page and will be saved in the request's additional data.",
+      "fieldTypes": {
+        "TEXT": "Text",
+        "EMAIL": "Email",
+        "NUMBER": "Number"
+      }
+    }
+  },
+  "notFound": {
+    "message": "Oops! Page not found",
+    "returnHome": "Return to Home"
   }
 }

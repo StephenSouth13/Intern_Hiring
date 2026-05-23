@@ -1,6 +1,7 @@
 export type JobFilterOption = {
   value: string;
   label: string;
+  labelKey?: string;
   disabled?: boolean;
 };
 
@@ -42,25 +43,25 @@ export const emptyJobFilterValue: JobFilterValue = {
 
 export const defaultJobFilterOptions: JobFilterOptions = {
   cities: [
-    { value: "ho-chi-minh", label: "Hồ Chí Minh" },
-    { value: "ha-noi", label: "Hà Nội" },
-    { value: "da-nang", label: "Đà Nẵng" },
-    { value: "remote", label: "Remote" },
+    { value: "ho-chi-minh", label: "Ho Chi Minh City", labelKey: "jobs.filters.options.cities.hoChiMinh" },
+    { value: "ha-noi", label: "Hanoi", labelKey: "jobs.filters.options.cities.haNoi" },
+    { value: "da-nang", label: "Da Nang", labelKey: "jobs.filters.options.cities.daNang" },
+    { value: "remote", label: "Remote", labelKey: "jobs.filters.options.cities.remote" },
   ],
   workModes: [
-    { value: "onsite", label: "Làm việc tại văn phòng" },
-    { value: "hybrid", label: "Hybrid" },
-    { value: "remote", label: "Remote" },
+    { value: "onsite", label: "On-site", labelKey: "jobs.filters.options.workModes.onsite" },
+    { value: "hybrid", label: "Hybrid", labelKey: "jobs.filters.options.workModes.hybrid" },
+    { value: "remote", label: "Remote", labelKey: "jobs.filters.options.workModes.remote" },
   ],
   jobTypes: [
-    { value: "internship", label: "Thực tập" },
-    { value: "part-time", label: "Part-time" },
-    { value: "full-time", label: "Full-time" },
+    { value: "internship", label: "Internship", labelKey: "jobs.filters.options.jobTypes.internship" },
+    { value: "part-time", label: "Part-time", labelKey: "jobs.filters.options.jobTypes.partTime" },
+    { value: "full-time", label: "Full-time", labelKey: "jobs.filters.options.jobTypes.fullTime" },
   ],
   districts: [
-    { value: "quan-1", label: "Quận 1" },
-    { value: "quan-3", label: "Quận 3" },
-    { value: "thu-duc", label: "Thành phố Thủ Đức" },
+    { value: "quan-1", label: "District 1", labelKey: "jobs.filters.options.districts.district1" },
+    { value: "quan-3", label: "District 3", labelKey: "jobs.filters.options.districts.district3" },
+    { value: "thu-duc", label: "Thu Duc City", labelKey: "jobs.filters.options.districts.thuDuc" },
   ],
   wards: [],
   companies: [
