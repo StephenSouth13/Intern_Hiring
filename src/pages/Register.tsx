@@ -25,9 +25,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Eye, EyeOff, GraduationCap, Loader2, Lock, Mail, Phone, User } from "lucide-react";
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  GraduationCap,
+  KeyRound,
+  Loader2,
+  Lock,
+  Mail,
+  Phone,
+  RotateCcw,
+  User,
+} from "lucide-react";
 
 type RegisterFormValues = {
   email: string;
@@ -37,11 +54,20 @@ type RegisterFormValues = {
   phoneNumber?: string;
 };
 
+type TokenFormValues = {
+  token: string;
+};
+
+const SIGNUP_TOKEN_LENGTH = 8;
+
 const Register = () => {
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
   const navigate = useNavigate();
+
   const registerSchema = useMemo(
     () =>
       z.object({
@@ -56,6 +82,17 @@ const Register = () => {
     [t],
   );
 
+  const tokenSchema = useMemo(
+    () =>
+      z.object({
+        token: z
+          .string()
+          .trim()
+          .regex(new RegExp(`^\\d{${SIGNUP_TOKEN_LENGTH}}$`), t("register.tokenInvalid")),
+      }),
+    [t],
+  );
+
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -64,6 +101,13 @@ const Register = () => {
       firstName: "",
       lastName: "",
       phoneNumber: "",
+    },
+  });
+
+  const tokenForm = useForm<TokenFormValues>({
+    resolver: zodResolver(tokenSchema),
+    defaultValues: {
+      token: "",
     },
   });
 
@@ -85,14 +129,57 @@ const Register = () => {
 
       if (error) throw error;
 
-      toast.success(t("register.success"));
-      form.reset();
-      navigate("/login");
+      setPendingEmail(values.email);
+      tokenForm.reset();
+      toast.success(t("register.tokenSent"));
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : t("auth.systemConnectionError"));
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const onVerifyToken = async ({ token }: TokenFormValues) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: pendingEmail,
+        token,
+        type: "signup",
+      });
+
+      if (error) throw error;
+      if (!data.session) throw new Error(t("register.missingSession"));
+
+      toast.success(t("register.success"));
+      navigate("/");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("auth.systemConnectionError"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onResendToken = async () => {
+    setIsResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: pendingEmail,
+      });
+
+      if (error) throw error;
+      toast.success(t("register.tokenResent"));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("auth.systemConnectionError"));
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const resetTokenStep = () => {
+    setPendingEmail("");
+    tokenForm.reset();
   };
 
   return (
@@ -137,133 +224,205 @@ const Register = () => {
                 </Badge>
               </div>
               <CardTitle className="text-2xl font-bold text-foreground">
-                {t("register.title")}
+                {pendingEmail ? t("register.verifyTitle") : t("register.title")}
               </CardTitle>
               <CardDescription>
-                {t("register.description")}
+                {pendingEmail
+                  ? t("register.verifyDescription", { email: pendingEmail })
+                  : t("register.description")}
               </CardDescription>
             </CardHeader>
             <CardContent className="px-5 pb-3 sm:px-7">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+              {pendingEmail ? (
+                <Form {...tokenForm}>
+                  <form onSubmit={tokenForm.handleSubmit(onVerifyToken)} className="space-y-4">
                     <FormField
-                      control={form.control}
-                      name="lastName"
+                      control={tokenForm.control}
+                      name="token"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("profile.last_name")}</FormLabel>
+                          <FormLabel>{t("register.tokenLabel")}</FormLabel>
                           <FormControl>
-                            <div className="relative">
-                              <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                              <Input placeholder="Nguyen" className="h-9 pl-10" {...field} />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{t("profile.first_name")}</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                              <Input placeholder="An" className="h-9 pl-10" {...field} />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              placeholder="ten@example.com"
-                              className="h-9 pl-10"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="phoneNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("profile.phone")}</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="0901234567" className="h-9 pl-10" {...field} />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("common.password")}</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              type={showPassword ? "text" : "password"}
-                              placeholder={t("register.passwordPlaceholder")}
-                              className="h-9 pl-10 pr-10"
-                              {...field}
-                            />
-                            <button
-                              type="button"
-                              aria-label={showPassword ? t("login.hidePassword") : t("login.showPassword")}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-primary"
-                              onClick={() => setShowPassword((current) => !current)}
+                            <InputOTP
+                              maxLength={SIGNUP_TOKEN_LENGTH}
+                              value={field.value}
+                              onChange={field.onChange}
+                              disabled={isLoading}
+                              containerClassName="justify-center"
                             >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    type="submit"
-                    variant="cta"
-                    className="h-10 w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <ArrowRight className="mr-2 h-4 w-4" />
-                    )}
-                    {t("register.submit")}
-                  </Button>
-                </form>
-              </Form>
+                              <InputOTPGroup>
+                                {Array.from({ length: SIGNUP_TOKEN_LENGTH }).map((_, index) => (
+                                  <InputOTPSlot key={index} index={index} />
+                                ))}
+                              </InputOTPGroup>
+                            </InputOTP>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="submit"
+                      variant="cta"
+                      className="h-10 w-full"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <KeyRound className="mr-2 h-4 w-4" />
+                      )}
+                      {t("register.verifySubmit")}
+                    </Button>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10 flex-1"
+                        disabled={isLoading || isResending}
+                        onClick={onResendToken}
+                      >
+                        {isResending ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <RotateCcw className="mr-2 h-4 w-4" />
+                        )}
+                        {t("register.resendToken")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-10 flex-1"
+                        disabled={isLoading}
+                        onClick={resetTokenStep}
+                      >
+                        {t("register.changeEmail")}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              ) : (
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormField
+                        control={form.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("profile.last_name")}</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input placeholder="Nguyen" className="h-9 pl-10" {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("profile.first_name")}</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input placeholder="An" className="h-9 pl-10" {...field} />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder="ten@example.com"
+                                className="h-9 pl-10"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("profile.phone")}</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                              <Input placeholder="0901234567" className="h-9 pl-10" {...field} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("common.password")}</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder={t("register.passwordPlaceholder")}
+                                className="h-9 pl-10 pr-10"
+                                {...field}
+                              />
+                              <button
+                                type="button"
+                                aria-label={showPassword ? t("login.hidePassword") : t("login.showPassword")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-primary"
+                                onClick={() => setShowPassword((current) => !current)}
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="submit"
+                      variant="cta"
+                      className="h-10 w-full"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <ArrowRight className="mr-2 h-4 w-4" />
+                      )}
+                      {t("register.submit")}
+                    </Button>
+                  </form>
+                </Form>
+              )}
             </CardContent>
             <CardFooter className="flex justify-center border-t bg-secondary/40 px-5 py-3 sm:px-7">
               <p className="text-sm text-muted-foreground">
