@@ -123,6 +123,22 @@ const Home: React.FC = () => {
             return;
         }
 
+        const invalidField = recruiterFields.find((field) => {
+            const value = employerRequest[field.name]?.trim();
+            if (!value || !field.validationRegex) return false;
+
+            try {
+                return !new RegExp(`^(?:${field.validationRegex})$`).test(value);
+            } catch {
+                return false;
+            }
+        });
+
+        if (invalidField) {
+            toast.error(t("home.employerRequest.invalidFormat", { field: invalidField.label }));
+            return;
+        }
+
         setIsSubmittingEmployerRequest(true);
         try {
             const formData: Record<string, string> = {};
@@ -320,7 +336,7 @@ const Home: React.FC = () => {
                                         {field.required && <span className="ml-1 text-destructive">*</span>}
                                     </Label>
                                     <Input
-                                        type={field.type.toLowerCase()}
+                                        type="text"
                                         value={employerRequest[field.name] || ""}
                                         onChange={(event) =>
                                             setEmployerRequest({ ...employerRequest, [field.name]: event.target.value })

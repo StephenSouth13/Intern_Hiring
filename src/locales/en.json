@@ -180,6 +180,7 @@
       "loginRequired": "Please log in before sending a recruiter verification request.",
       "loadFormError": "Could not load form configuration.",
       "requiredMissing": "Please complete all required fields.",
+      "invalidFormat": "{{field}} has an invalid format.",
       "success": "Recruiter verification request sent.",
       "submitError": "Could not send verification request.",
       "title": "Recruiter verification request",
@@ -287,6 +288,9 @@
       "ACTIVE": "Visible",
       "VISIBLE": "Visible",
       "PUBLISHED": "Visible",
+      "PENDING": "Pending review",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
       "HIDDEN": "Hidden",
       "TRASHED": "Deleted",
       "DELETED": "Deleted"
@@ -476,15 +480,17 @@
       "fieldLabel": "Field label",
       "fieldLabelPlaceholder": "Example: Company website",
       "fieldName": "Field name",
-      "fieldType": "Type",
       "placeholder": "Placeholder",
       "storageName": "Storage name",
-      "newFieldsHint": "New fields will appear in the verification request form on the home page and will be saved in the request's additional data.",
-      "fieldTypes": {
-        "TEXT": "Text",
-        "EMAIL": "Email",
-        "NUMBER": "Number"
-      }
+      "addField": "Add field",
+      "addFieldDialogTitle": "Add verification field",
+      "addFieldDialogDescription": "Create a new field for the recruiter verification request form.",
+      "validationRegex": "Format regex",
+      "regexPlaceholder": "Example: ^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+      "regexHint": "Leave blank when no format validation is needed. The regex will validate user-submitted values.",
+      "invalidRegex": "Invalid regex.",
+      "noRegex": "Not applied",
+      "newFieldsHint": "New fields will appear in the verification request form on the home page and will be saved in the request's additional data."
     }
   },
   "notFound": {

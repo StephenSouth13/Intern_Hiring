@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/context/AuthContext";
 import { isRecruiterRole } from "@/lib/roles";
-import { supabase } from "@/lib/supabase";
+import { recruiterApi } from "@/lib/api";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,7 +64,7 @@ const emptyJobFormValue: JobFormValue = {
   description: "",
 };
 
-const visibleStatus = "ACTIVE";
+const visibleStatus = "PENDING";
 const hiddenStatus = "HIDDEN";
 
 const jobTypes = ["Internship", "Part-time", "Full-time"];
@@ -103,7 +103,7 @@ const getStatusBadgeClassName = (status?: string | null) => {
 
 const RecruiterDashboard: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, token, isAuthenticated, isLoading } = useAuth();
   const [jobs, setJobs] = useState<RecruiterJob[]>([]);
   const [formValue, setFormValue] = useState<JobFormValue>(emptyJobFormValue);
   const [loadingJobs, setLoadingJobs] = useState(true);
@@ -133,28 +133,23 @@ const RecruiterDashboard: React.FC = () => {
   }, [resetForm]);
 
   const loadJobs = useCallback(async () => {
-    if (!recruiterEmail) {
+    if (!recruiterEmail || !token) {
       setJobs([]);
       setLoadingJobs(false);
       return;
     }
 
     setLoadingJobs(true);
-    const { data, error } = await supabase
-      .from("jobs")
-      .select("id,title,company,employer_name,employer_email,location,type,salary,description,status,created_at,updated_at,deleted_at")
-      .eq("employer_email", recruiterEmail)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast.error(error.message || t("recruiter.toast.loadError"));
+    try {
+      const data = await recruiterApi.listJobs(token);
+      setJobs((data ?? []).filter((job) => !isDeletedJob(job)));
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("recruiter.toast.loadError"));
       setJobs([]);
-    } else {
-      setJobs(((data ?? []) as RecruiterJob[]).filter((job) => !isDeletedJob(job)));
+    } finally {
+      setLoadingJobs(false);
     }
-
-    setLoadingJobs(false);
-  }, [recruiterEmail, t]);
+  }, [recruiterEmail, t, token]);
 
   useEffect(() => {
     loadJobs();
@@ -186,78 +181,59 @@ const RecruiterDashboard: React.FC = () => {
       return;
     }
 
-    const now = new Date().toISOString();
+    if (!token) return;
+
     setSubmitting(true);
-
-    const { error } = await supabase.from("jobs").insert({
-      title: formValue.title.trim(),
-      company: formValue.company.trim(),
-      employer_name: formValue.employerName.trim(),
-      employer_email: recruiterEmail,
-      location: formValue.location.trim(),
-      type: formValue.type.trim(),
-      salary: formValue.salary.trim() || null,
-      description: formValue.description.trim(),
-      status: visibleStatus,
-      created_at: now,
-      updated_at: now,
-      deleted_at: null,
-    });
-
-    if (error) {
-      toast.error(error.message || t("recruiter.toast.createError"));
-    } else {
+    try {
+      await recruiterApi.createJob(token, {
+        title: formValue.title.trim(),
+        company: formValue.company.trim(),
+        employerName: formValue.employerName.trim(),
+        location: formValue.location.trim(),
+        type: formValue.type.trim(),
+        salary: formValue.salary.trim() || undefined,
+        description: formValue.description.trim(),
+      });
       toast.success(t("recruiter.toast.createSuccess"));
       resetForm();
       await loadJobs();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("recruiter.toast.createError"));
+    } finally {
+      setSubmitting(false);
     }
-
-    setSubmitting(false);
   };
 
   const updateJobStatus = async (job: RecruiterJob, status: string) => {
+    if (!token) return;
+
     setActionId(job.id);
-
-    const { error } = await supabase
-      .from("jobs")
-      .update({
-        status,
-        updated_at: new Date().toISOString(),
-        deleted_at: null,
-      })
-      .eq("id", job.id)
-      .eq("employer_email", recruiterEmail);
-
-    if (error) {
-      toast.error(error.message || t("recruiter.toast.statusError"));
-    } else {
+    try {
+      await recruiterApi.updateJobStatus(token, job.id, status);
       toast.success(status === hiddenStatus ? t("recruiter.toast.hideSuccess") : t("recruiter.toast.showSuccess"));
       await loadJobs();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("recruiter.toast.statusError"));
+    } finally {
+      setActionId(null);
     }
-
-    setActionId(null);
   };
 
   const handleDeleteJob = async () => {
     if (!jobPendingDelete) return;
+    if (!token) return;
 
     setActionId(jobPendingDelete.id);
-
-    const { error } = await supabase
-      .from("jobs")
-      .delete()
-      .eq("id", jobPendingDelete.id)
-      .eq("employer_email", recruiterEmail);
-
-    if (error) {
-      toast.error(error.message || t("recruiter.toast.deleteError"));
-    } else {
+    try {
+      await recruiterApi.deleteJob(token, jobPendingDelete.id);
       toast.success(t("recruiter.toast.deleteSuccess"));
       setJobPendingDelete(null);
       await loadJobs();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("recruiter.toast.deleteError"));
+    } finally {
+      setActionId(null);
     }
-
-    setActionId(null);
   };
 
   if (isLoading) {

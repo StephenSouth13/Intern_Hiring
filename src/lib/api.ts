@@ -139,6 +139,32 @@ export type AdminJobPost = {
   deletedAt?: string | null;
 };
 
+export type RecruiterJobPost = {
+  id: string | number;
+  title: string | null;
+  company: string | null;
+  employer_name: string | null;
+  employer_email: string | null;
+  location: string | null;
+  type: string | null;
+  salary: string | null;
+  description: string | null;
+  status: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  deleted_at: string | null;
+};
+
+export type RecruiterJobPayload = {
+  title: string;
+  company: string;
+  employerName?: string;
+  location: string;
+  type: string;
+  salary?: string;
+  description: string;
+};
+
 export const adminApi = {
   listUsers: (token: string) =>
     apiRequest<AdminUser[]>("/api/admin/users", {
@@ -207,7 +233,7 @@ export type RecruiterFormField = {
   id: number;
   name: string;
   label: string;
-  type: "TEXT" | "EMAIL" | "NUMBER";
+  validationRegex?: string;
   placeholder?: string;
   required: boolean;
   sortOrder: number;
@@ -304,6 +330,31 @@ export const recruiterApi = {
   restoreApplication: (token: string, id: number) =>
     apiRequest<RecruiterApplication>(`/api/recruiter/applications/${id}/restore`, {
       method: "POST",
+      headers: authHeaders(token),
+    }),
+
+  listJobs: (token: string) =>
+    apiRequest<RecruiterJobPost[]>("/api/recruiter/jobs", {
+      headers: authHeaders(token),
+    }),
+
+  createJob: (token: string, data: RecruiterJobPayload) =>
+    apiRequest<RecruiterJobPost>("/api/recruiter/jobs", {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(data),
+    }),
+
+  updateJobStatus: (token: string, id: string | number, status: string) =>
+    apiRequest<RecruiterJobPost>(`/api/recruiter/jobs/${encodeURIComponent(String(id))}/status`, {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: JSON.stringify({ status }),
+    }),
+
+  deleteJob: (token: string, id: string | number) =>
+    apiRequest<void>(`/api/recruiter/jobs/${encodeURIComponent(String(id))}`, {
+      method: "DELETE",
       headers: authHeaders(token),
     }),
 };
