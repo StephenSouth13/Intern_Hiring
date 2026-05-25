@@ -64,7 +64,7 @@ const emptyJobFormValue: JobFormValue = {
   description: "",
 };
 
-const visibleStatus = "PENDING";
+const visibleStatus = "ACTIVE";
 const hiddenStatus = "HIDDEN";
 
 const jobTypes = ["Internship", "Part-time", "Full-time"];
@@ -93,6 +93,8 @@ const getStatusBadgeClassName = (status?: string | null) => {
     case "DELETED":
       return "border-red-200 bg-red-50 text-red-700";
     case visibleStatus:
+    case "APPROVED":
+    case "PENDING":
     case "VISIBLE":
     case "PUBLISHED":
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
