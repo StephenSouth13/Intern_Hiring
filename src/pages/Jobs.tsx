@@ -17,6 +17,7 @@ import {
   type JobFilterValue,
 } from "@/components/jobs/jobFilterConfig";
 import { supabase } from "@/lib/supabase";
+import { getVietnamDistrictOptions, getVietnamProvinceOptions, getVietnamWardOptions } from "@/lib/vietnamProvinces";
 
 type SupabaseJob = {
   id: string | number;
@@ -63,7 +64,7 @@ const getMaxNumber = (value?: string | null) => {
 
 const isVisibleJob = (job: SupabaseJob) => {
   const status = job.status?.toUpperCase();
-  return !job.deleted_at && status !== "TRASHED" && status !== "DELETED";
+  return !job.deleted_at && !["TRASHED", "DELETED", "HIDDEN", "INACTIVE", "DRAFT"].includes(status ?? "");
 };
 
 const matchesOption = (
@@ -76,11 +77,13 @@ const matchesOption = (
 
   const normalizedSource = normalizeText(source);
   const option = options.find((item) => item.value === selectedValue);
-  const candidates = [
-    selectedValue,
-    option?.label,
-    option?.labelKey ? translate(option.labelKey) : undefined,
-  ];
+  const candidates = option
+    ? [
+        option.label,
+        option.labelKey ? translate(option.labelKey) : undefined,
+        ...(option.aliases ?? []),
+      ]
+    : [selectedValue];
 
   return candidates.some((candidate) => {
     const normalizedCandidate = normalizeText(candidate);
@@ -132,6 +135,9 @@ const Jobs: React.FC = () => {
   const [searchParams] = useSearchParams();
   const initialKeyword = searchParams.get("keyword") ?? "";
   const [managedConfig, setManagedConfig] = useState<ManagedSiteConfig>(defaultManagedSiteConfig);
+  const [provinceOptions, setProvinceOptions] = useState<JobFilterOption[]>([]);
+  const [districtOptions, setDistrictOptions] = useState<JobFilterOption[]>([]);
+  const [wardOptions, setWardOptions] = useState<JobFilterOption[]>([]);
   const [jobs, setJobs] = useState<SupabaseJob[]>([]);
   const [filterValue, setFilterValue] = useState<JobFilterValue>({
     ...emptyJobFilterValue,
@@ -143,6 +149,86 @@ const Jobs: React.FC = () => {
   useEffect(() => {
     setFilterValue((current) => ({ ...current, keyword: initialKeyword }));
   }, [initialKeyword]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    getVietnamProvinceOptions()
+      .then((options) => {
+        if (mounted) {
+          setProvinceOptions(options);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setProvinceOptions([]);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const selectedProvince = provinceOptions.find((option) => option.value === filterValue.city);
+
+    if (!selectedProvince) {
+      setDistrictOptions([]);
+      setWardOptions([]);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    setDistrictOptions([]);
+    setWardOptions([]);
+    getVietnamDistrictOptions(filterValue.city)
+      .then((options) => {
+        if (mounted) {
+          setDistrictOptions(options);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setDistrictOptions([]);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [filterValue.city, provinceOptions]);
+
+  useEffect(() => {
+    let mounted = true;
+    const selectedDistrict = districtOptions.find((option) => option.value === filterValue.district);
+
+    if (!selectedDistrict) {
+      setWardOptions([]);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    setWardOptions([]);
+    getVietnamWardOptions(filterValue.district)
+      .then((options) => {
+        if (mounted) {
+          setWardOptions(options);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setWardOptions([]);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [filterValue.district, districtOptions]);
 
   useEffect(() => {
     let mounted = true;
@@ -180,9 +266,20 @@ const Jobs: React.FC = () => {
     };
   }, [t]);
 
+  const filterOptions = useMemo<JobFilterOptions>(() => {
+    if (provinceOptions.length === 0) return managedConfig.filters;
+
+    return {
+      ...managedConfig.filters,
+      cities: provinceOptions,
+      districts: districtOptions,
+      wards: wardOptions,
+    };
+  }, [districtOptions, managedConfig.filters, provinceOptions, wardOptions]);
+
   const filteredJobs = useMemo(
-    () => filterJobs(jobs, filterValue, managedConfig.filters, t),
-    [jobs, filterValue, managedConfig.filters, t],
+    () => filterJobs(jobs, filterValue, filterOptions, t),
+    [jobs, filterValue, filterOptions, t],
   );
   const dateLocale = i18n.language?.startsWith("vi") ? "vi-VN" : "en-US";
 
@@ -197,7 +294,7 @@ const Jobs: React.FC = () => {
 
       <section className="container mx-auto space-y-6 px-4 py-8">
         <JobSearchFilters
-          options={managedConfig.filters}
+          options={filterOptions}
           value={filterValue}
           onChange={setFilterValue}
           onReset={() => setFilterValue(emptyJobFilterValue)}

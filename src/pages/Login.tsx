@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { authApi, isApiError } from "@/lib/api";
-import { isAdminRole, isRestrictedAccount } from "@/lib/roles";
+import { isAdminRole, isRecruiterRole, isRestrictedAccount } from "@/lib/roles";
 import ResetPasswordDialog from "@/components/ResetPasswordDialog";
 import {
   Card,
@@ -84,6 +84,8 @@ const Login = () => {
 
         if (isAdminRole(profile.role)) {
           redirectTo = "/admin";
+        } else if (isRecruiterRole(profile.role)) {
+          redirectTo = "/recruiter";
         }
       }
 

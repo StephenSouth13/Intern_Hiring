@@ -45,6 +45,7 @@
   "role": {
     "CANDIDATE": "Candidate",
     "RECRUITER": "Recruiter",
+    "MODERATOR": "Moderator",
     "ADMIN": "Admin"
   },
   "language": {
@@ -63,7 +64,8 @@
     "featured": "Featured",
     "jobs": "Jobs",
     "partners": "Partners",
-    "recruitment": "Recruitment"
+    "recruitment": "Recruitment",
+    "recruiterDashboard": "Recruiter dashboard"
   },
   "auth": {
     "restrictedMessage": "Your account is restricted. Please contact an administrator.",
@@ -209,7 +211,10 @@
       "advanced": "Advanced search",
       "district": "District",
       "ward": "Ward",
+      "districtPlaceholder": "Select province/city first",
+      "districtSelectPlaceholder": "Select district",
       "wardPlaceholder": "Select district first",
+      "wardSelectPlaceholder": "Select ward",
       "locationMap": {
         "label": "Google Maps location",
         "placeholder": "Enter a city, district, or address",
@@ -224,12 +229,6 @@
       "currency": "Currency",
       "reset": "Reset filters",
       "options": {
-        "cities": {
-          "hoChiMinh": "Ho Chi Minh City",
-          "haNoi": "Hanoi",
-          "daNang": "Da Nang",
-          "remote": "Remote"
-        },
         "workModes": {
           "onsite": "On-site",
           "hybrid": "Hybrid",
@@ -239,13 +238,74 @@
           "internship": "Internship",
           "partTime": "Part-time",
           "fullTime": "Full-time"
-        },
-        "districts": {
-          "district1": "District 1",
-          "district3": "District 3",
-          "thuDuc": "Thu Duc City"
         }
       }
+    }
+  },
+  "recruiter": {
+    "badge": "RECRUITER",
+    "title": "Recruiter dashboard",
+    "description": "Post new jobs and manage visibility for your own job posts.",
+    "stats": {
+      "total": "Total posts",
+      "visible": "Visible posts",
+      "hidden": "Hidden posts"
+    },
+    "form": {
+      "title": "Post a new job",
+      "jobTitle": "Job title",
+      "jobTitlePlaceholder": "Example: Frontend Intern",
+      "company": "Company",
+      "companyPlaceholder": "Company name",
+      "employerName": "Recruiter name",
+      "employerEmail": "Recruiter email",
+      "location": "Location",
+      "locationPlaceholder": "Example: District 1, Ho Chi Minh City",
+      "salary": "Salary",
+      "salaryPlaceholder": "Example: 5,000,000 VND",
+      "type": "Job type",
+      "typePlaceholder": "Select job type",
+      "jobDescription": "Description",
+      "jobDescriptionPlaceholder": "Describe responsibilities, requirements, benefits, and application notes.",
+      "submit": "Post job"
+    },
+    "types": {
+      "Internship": "Internship",
+      "Part-time": "Part-time",
+      "Full-time": "Full-time"
+    },
+    "jobs": {
+      "title": "My job posts",
+      "empty": "You have not posted any jobs yet.",
+      "status": "Status",
+      "createdAt": "Posted date",
+      "hide": "Hide",
+      "show": "Show",
+      "delete": "Delete"
+    },
+    "status": {
+      "ACTIVE": "Visible",
+      "VISIBLE": "Visible",
+      "PUBLISHED": "Visible",
+      "HIDDEN": "Hidden",
+      "TRASHED": "Deleted",
+      "DELETED": "Deleted"
+    },
+    "deleteDialog": {
+      "title": "Delete job post?",
+      "description": "This will permanently delete \"{{title}}\". This action cannot be undone.",
+      "confirm": "Delete permanently"
+    },
+    "toast": {
+      "loadError": "Could not load your job posts.",
+      "required": "Please complete all required job fields.",
+      "createSuccess": "Job post created.",
+      "createError": "Could not create job post.",
+      "hideSuccess": "Job post hidden.",
+      "showSuccess": "Job post visible.",
+      "statusError": "Could not update job status.",
+      "deleteSuccess": "Job post deleted permanently.",
+      "deleteError": "Could not delete job post."
     }
   },
   "profile": {
@@ -300,6 +360,16 @@
     "restrictionRemovedSuccess": "Account restriction removed.",
     "restrictionForbidden": "You do not have permission to update this account restriction.",
     "restrictionUpdateError": "Could not update restriction status.",
+    "roleUpdateSuccess": "User role updated.",
+    "roleUpdateForbidden": "You do not have permission to update this user role.",
+    "roleUpdateError": "Could not update user role.",
+    "roleChangeAdminConfirm": "Grant admin permissions to this user?",
+    "revokeRecruiterConfirm": "Revoke recruiter permission and set this user back to candidate?",
+    "roleAdminLocked": "The system can only have one admin, so admin permissions cannot be granted to another user.",
+    "revokeRecruiterSuccess": "Recruiter permission revoked.",
+    "revokeRecruiterError": "Could not revoke recruiter permission.",
+    "restoreRecruiterSuccess": "Recruiter permission restored.",
+    "restoreRecruiterError": "Could not restore recruiter permission.",
     "trashJobSuccess": "Job post moved to trash.",
     "trashJobError": "Could not move job post to trash.",
     "restoreJobSuccess": "Job post restored.",
@@ -328,7 +398,9 @@
       "restricted": "Restricted",
       "active": "Active",
       "restrict": "Restrict",
-      "unrestrict": "Remove restriction"
+      "unrestrict": "Remove restriction",
+      "setRole": "Set role",
+      "revokeRecruiter": "Revoke recruiter"
     },
     "jobs": {
       "title": "Manage job posts",
@@ -349,10 +421,13 @@
       "note": "Note",
       "approve": "Approve",
       "reject": "Reject",
+      "revoke": "Revoke",
+      "restore": "Restore",
       "statuses": {
         "PENDING": "Pending",
         "APPROVED": "Approved",
-        "REJECTED": "Rejected"
+        "REJECTED": "Rejected",
+        "REVOKED": "Revoked"
       }
     },
     "userDialog": {

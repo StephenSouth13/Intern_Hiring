@@ -16,7 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { isAdminRole } from "@/lib/roles";
+import { isAdminRole, isRecruiterRole } from "@/lib/roles";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
@@ -119,6 +119,11 @@ const Navbar = () => {
                       <Link to="/admin">{t("nav.admin")}</Link>
                     </DropdownMenuItem>
                   )}
+                  {isRecruiterRole(user?.role) && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/recruiter">{t("nav.recruiterDashboard")}</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link to="/profile">{t("nav.profile")}</Link>
                   </DropdownMenuItem>
@@ -185,6 +190,12 @@ const Navbar = () => {
                           <Link to="/admin" className="mb-2 flex items-center gap-2 rounded-md p-2 hover:bg-muted transition">
                             <UserIcon className="h-4 w-4" />
                             <span className="text-sm font-medium">{t("nav.admin")}</span>
+                          </Link>
+                        )}
+                        {isRecruiterRole(user?.role) && (
+                          <Link to="/recruiter" className="mb-2 flex items-center gap-2 rounded-md p-2 hover:bg-muted transition">
+                            <UserIcon className="h-4 w-4" />
+                            <span className="text-sm font-medium">{t("nav.recruiterDashboard")}</span>
                           </Link>
                         )}
                         <Link to="/profile" className="flex items-center gap-2 mb-2 rounded-md p-2 hover:bg-muted transition">

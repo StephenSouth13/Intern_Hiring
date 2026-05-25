@@ -153,6 +153,13 @@ export const adminApi = {
       body: JSON.stringify({ restricted }),
     }),
 
+  setUserRole: (token: string, userId: string | number, role: string) =>
+    apiRequest<AdminUser>(`/api/admin/users/${encodeURIComponent(String(userId))}/role`, {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: JSON.stringify({ role }),
+    }),
+
   listJobs: (token: string, includeTrash = true) =>
     apiRequest<AdminJobPost[]>("/api/admin/jobs", {
       headers: authHeaders(token),
@@ -212,7 +219,7 @@ export type RecruiterApplication = {
   applicantId: number;
   applicantEmail: string;
   formData: Record<string, string>;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "REVOKED";
   reviewNote?: string;
   reviewedById?: number;
   reviewedAt?: string;
@@ -286,5 +293,17 @@ export const recruiterApi = {
       method: "POST",
       headers: authHeaders(token),
       body: JSON.stringify({ approved, reviewNote }),
+    }),
+
+  revokeApplication: (token: string, id: number) =>
+    apiRequest<RecruiterApplication>(`/api/recruiter/applications/${id}/revoke`, {
+      method: "POST",
+      headers: authHeaders(token),
+    }),
+
+  restoreApplication: (token: string, id: number) =>
+    apiRequest<RecruiterApplication>(`/api/recruiter/applications/${id}/restore`, {
+      method: "POST",
+      headers: authHeaders(token),
     }),
 };
