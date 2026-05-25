@@ -14,12 +14,13 @@ import {
   ShieldAlert,
   Trash2,
   Users,
+  UserCog,
   XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { adminApi, isApiError, recruiterApi, type AdminJobPost, type AdminUser, type RecruiterApplication } from "@/lib/api";
-import { isAdminRole } from "@/lib/roles";
+import { isAdminRole, isRecruiterRole, USER_ROLES, type UserRole } from "@/lib/roles";
 import { CategoryManagementPanel } from "@/components/admin/CategoryManagementPanel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,6 +53,23 @@ const formatDate = (value?: string | null, locale = "en-US") => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString(locale);
+};
+
+const roleOptions = Object.values(USER_ROLES);
+
+const normalizeRole = (role?: string | null) => role?.trim().toUpperCase();
+
+const getRoleBadgeClassName = (role?: string | null) => {
+  switch (normalizeRole(role)) {
+    case USER_ROLES.ADMIN:
+      return "border-red-200 bg-red-50 text-red-700";
+    case USER_ROLES.RECRUITER:
+      return "border-blue-200 bg-blue-50 text-blue-700";
+    case USER_ROLES.CANDIDATE:
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    default:
+      return "border-slate-200 bg-slate-50 text-slate-700";
+  }
 };
 
 
@@ -104,8 +123,45 @@ const AdminDashboard: React.FC = () => {
 
   const requireConfirm = (message: string) => window.confirm(message);
 
+  const handleRoleChange = async (targetUser: AdminUser, role: UserRole) => {
+    if (!token) return;
+    if (normalizeRole(targetUser.role) === role) return;
+    if (
+      role === USER_ROLES.ADMIN &&
+      !requireConfirm(t("admin.roleChangeAdminConfirm", { defaultValue: "C\u1ea5p quy\u1ec1n admin cho ng\u01b0\u1eddi d\u00f9ng n\u00e0y?" }))
+    ) {
+      return;
+    }
 
+    setActionId(targetUser.id);
+    try {
+      await adminApi.setUserRole(token, targetUser.id, role);
 
+      toast.success(t("admin.roleUpdateSuccess", { defaultValue: "\u0110\u00e3 c\u1eadp nh\u1eadt vai tr\u00f2 ng\u01b0\u1eddi d\u00f9ng." }));
+      await loadData();
+    } catch (error: unknown) {
+      if (isApiError(error) && error.status === 403) {
+        toast.error(t("admin.roleUpdateForbidden", { defaultValue: "B\u1ea1n kh\u00f4ng c\u00f3 quy\u1ec1n c\u1eadp nh\u1eadt vai tr\u00f2 ng\u01b0\u1eddi d\u00f9ng n\u00e0y." }));
+      } else {
+        toast.error(error instanceof Error ? error.message : t("admin.roleUpdateError", { defaultValue: "Kh\u00f4ng th\u1ec3 c\u1eadp nh\u1eadt vai tr\u00f2 ng\u01b0\u1eddi d\u00f9ng." }));
+      }
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleRevokeRecruiter = async (targetUser: AdminUser) => {
+    if (
+      !requireConfirm(
+        t("admin.revokeRecruiterConfirm", {
+          defaultValue: "Thu h\u1ed3i quy\u1ec1n nh\u00e0 tuy\u1ec3n d\u1ee5ng v\u00e0 chuy\u1ec3n ng\u01b0\u1eddi d\u00f9ng n\u00e0y v\u1ec1 \u1ee9ng vi\u00ean?",
+        }),
+      )
+    ) {
+      return;
+    }
+    await handleRoleChange(targetUser, USER_ROLES.CANDIDATE);
+  };
 
   const handleRestriction = async (targetUser: AdminUser, restricted: boolean) => {
     if (!token) return;
@@ -332,7 +388,9 @@ const AdminDashboard: React.FC = () => {
                               {account.lastName} {account.firstName}
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline">{account.role}</Badge>
+                              <Badge variant="outline" className={getRoleBadgeClassName(account.role)}>
+                                {t(`role.${normalizeRole(account.role)}`, { defaultValue: account.role })}
+                              </Badge>
                             </TableCell>
                             <TableCell>
                               <Badge variant={restricted ? "destructive" : "secondary"}>
@@ -340,10 +398,35 @@ const AdminDashboard: React.FC = () => {
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <div className="flex justify-end gap-2">
+                              <div className="flex flex-wrap justify-end gap-2">
                                 <Button variant="outline" size="sm" onClick={() => setSelectedUser(account)}>
                                   <Eye className="h-4 w-4" />
                                   {t("common.view")}
+                                </Button>
+                                <Select
+                                  value={normalizeRole(account.role)}
+                                  disabled={actionId === account.id}
+                                  onValueChange={(role) => handleRoleChange(account, role as UserRole)}
+                                >
+                                  <SelectTrigger className="h-9 w-[150px]">
+                                    <SelectValue placeholder={t("admin.users.setRole", { defaultValue: "Ch\u1ecdn vai tr\u00f2" })} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {roleOptions.map((role) => (
+                                      <SelectItem key={role} value={role}>
+                                        {t(`role.${role}`)}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={actionId === account.id || !isRecruiterRole(account.role)}
+                                  onClick={() => handleRevokeRecruiter(account)}
+                                >
+                                  <UserCog className="h-4 w-4" />
+                                  {t("admin.users.revokeRecruiter", { defaultValue: "Thu h\u1ed3i recruiter" })}
                                 </Button>
                                 <Button
                                   variant="outline"

@@ -274,6 +274,11 @@
     "restrictionRemovedSuccess": "Account restriction removed.",
     "restrictionForbidden": "You do not have permission to update this account restriction.",
     "restrictionUpdateError": "Could not update restriction status.",
+    "roleUpdateSuccess": "User role updated.",
+    "roleUpdateForbidden": "You do not have permission to update this user role.",
+    "roleUpdateError": "Could not update user role.",
+    "roleChangeAdminConfirm": "Grant admin permissions to this user?",
+    "revokeRecruiterConfirm": "Revoke recruiter permission and set this user back to candidate?",
     "trashJobSuccess": "Job post moved to trash.",
     "trashJobError": "Could not move job post to trash.",
     "restoreJobSuccess": "Job post restored.",
@@ -302,7 +307,9 @@
       "restricted": "Restricted",
       "active": "Active",
       "restrict": "Restrict",
-      "unrestrict": "Remove restriction"
+      "unrestrict": "Remove restriction",
+      "setRole": "Set role",
+      "revokeRecruiter": "Revoke recruiter"
     },
     "jobs": {
       "title": "Manage job posts",

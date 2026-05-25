@@ -153,6 +153,13 @@ export const adminApi = {
       body: JSON.stringify({ restricted }),
     }),
 
+  setUserRole: (token: string, userId: string | number, role: string) =>
+    apiRequest<AdminUser>(`/api/admin/users/${encodeURIComponent(String(userId))}/role`, {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: JSON.stringify({ role }),
+    }),
+
   listJobs: (token: string, includeTrash = true) =>
     apiRequest<AdminJobPost[]>("/api/admin/jobs", {
       headers: authHeaders(token),
