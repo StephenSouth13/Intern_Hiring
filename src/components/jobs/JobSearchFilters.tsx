@@ -116,6 +116,16 @@ export function JobSearchFilters({
 
   const updateValue = (field: keyof JobFilterValue, nextValue: string) => {
     const nextFilterValue = { ...filterValue, [field]: nextValue };
+
+    if (field === "city") {
+      nextFilterValue.district = "";
+      nextFilterValue.ward = "";
+    }
+
+    if (field === "district") {
+      nextFilterValue.ward = "";
+    }
+
     setInternalValue(nextFilterValue);
     onChange?.(nextFilterValue);
   };
@@ -129,6 +139,15 @@ export function JobSearchFilters({
     onChange?.(emptyJobFilterValue);
     onReset?.();
   };
+
+  const districtDisabled = !filterValue.city || filterOptions.districts.length === 0;
+  const wardDisabled = !filterValue.district || filterOptions.wards.length === 0;
+  const districtPlaceholder = filterValue.city
+    ? t("jobs.filters.districtSelectPlaceholder")
+    : t("jobs.filters.districtPlaceholder");
+  const wardPlaceholder = filterValue.district
+    ? t("jobs.filters.wardSelectPlaceholder")
+    : t("jobs.filters.wardPlaceholder");
 
   return (
     <div className="rounded-lg border bg-white p-5 shadow-sm md:p-6">
@@ -215,6 +234,8 @@ export function JobSearchFilters({
                 label={t("jobs.filters.district")}
                 value={filterValue.district}
                 options={filterOptions.districts}
+                placeholder={districtPlaceholder}
+                disabled={districtDisabled}
                 onChange={(nextValue) => updateValue("district", nextValue)}
               />
 
@@ -222,8 +243,8 @@ export function JobSearchFilters({
                 label={t("jobs.filters.ward")}
                 value={filterValue.ward}
                 options={filterOptions.wards}
-                placeholder={t("jobs.filters.wardPlaceholder")}
-                disabled={!filterValue.district && filterOptions.wards.length === 0}
+                placeholder={wardPlaceholder}
+                disabled={wardDisabled}
                 onChange={(nextValue) => updateValue("ward", nextValue)}
               />
 

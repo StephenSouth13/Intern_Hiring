@@ -2,6 +2,7 @@ export type JobFilterOption = {
   value: string;
   label: string;
   labelKey?: string;
+  aliases?: string[];
   disabled?: boolean;
 };
 
@@ -44,12 +45,7 @@ export const emptyJobFilterValue: JobFilterValue = {
 };
 
 export const defaultJobFilterOptions: JobFilterOptions = {
-  cities: [
-    { value: "ho-chi-minh", label: "Ho Chi Minh City", labelKey: "jobs.filters.options.cities.hoChiMinh" },
-    { value: "ha-noi", label: "Hanoi", labelKey: "jobs.filters.options.cities.haNoi" },
-    { value: "da-nang", label: "Da Nang", labelKey: "jobs.filters.options.cities.daNang" },
-    { value: "remote", label: "Remote", labelKey: "jobs.filters.options.cities.remote" },
-  ],
+  cities: [],
   workModes: [
     { value: "onsite", label: "On-site", labelKey: "jobs.filters.options.workModes.onsite" },
     { value: "hybrid", label: "Hybrid", labelKey: "jobs.filters.options.workModes.hybrid" },
@@ -60,11 +56,7 @@ export const defaultJobFilterOptions: JobFilterOptions = {
     { value: "part-time", label: "Part-time", labelKey: "jobs.filters.options.jobTypes.partTime" },
     { value: "full-time", label: "Full-time", labelKey: "jobs.filters.options.jobTypes.fullTime" },
   ],
-  districts: [
-    { value: "quan-1", label: "District 1", labelKey: "jobs.filters.options.districts.district1" },
-    { value: "quan-3", label: "District 3", labelKey: "jobs.filters.options.districts.district3" },
-    { value: "thu-duc", label: "Thu Duc City", labelKey: "jobs.filters.options.districts.thuDuc" },
-  ],
+  districts: [],
   wards: [],
   companies: [
     { value: "asl", label: "ASL" },

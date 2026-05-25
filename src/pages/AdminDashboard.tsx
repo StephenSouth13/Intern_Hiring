@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { adminApi, isApiError, recruiterApi, type AdminJobPost, type AdminUser, type RecruiterApplication } from "@/lib/api";
-import { isAdminRole, isRecruiterRole, USER_ROLES, type UserRole } from "@/lib/roles";
+import { isAdminRole, USER_ROLES, type UserRole } from "@/lib/roles";
 import { CategoryManagementPanel } from "@/components/admin/CategoryManagementPanel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,13 +56,17 @@ const formatDate = (value?: string | null, locale = "en-US") => {
 };
 
 const roleOptions = Object.values(USER_ROLES);
+const assignableRoleOptions = roleOptions.filter((role) => role !== USER_ROLES.ADMIN);
 
 const normalizeRole = (role?: string | null) => role?.trim().toUpperCase();
+const normalizeRequestStatus = (status?: string | null) => status?.trim().toUpperCase();
 
 const getRoleBadgeClassName = (role?: string | null) => {
   switch (normalizeRole(role)) {
     case USER_ROLES.ADMIN:
       return "border-red-200 bg-red-50 text-red-700";
+    case USER_ROLES.MODERATOR:
+      return "border-violet-200 bg-violet-50 text-violet-700";
     case USER_ROLES.RECRUITER:
       return "border-blue-200 bg-blue-50 text-blue-700";
     case USER_ROLES.CANDIDATE:
@@ -72,6 +76,25 @@ const getRoleBadgeClassName = (role?: string | null) => {
   }
 };
 
+const getAccountStatusBadgeClassName = (restricted: boolean) =>
+  restricted
+    ? "whitespace-nowrap border-red-200 bg-red-50 text-red-700"
+    : "whitespace-nowrap border-emerald-200 bg-emerald-50 text-emerald-700";
+
+const getRequestStatusBadgeClassName = (status?: string | null) => {
+  switch (normalizeRequestStatus(status)) {
+    case "APPROVED":
+      return "whitespace-nowrap border-emerald-200 bg-emerald-50 text-emerald-700";
+    case "REJECTED":
+      return "whitespace-nowrap border-red-200 bg-red-50 text-red-700";
+    case "REVOKED":
+      return "whitespace-nowrap border-amber-200 bg-amber-50 text-amber-700";
+    case "PENDING":
+      return "whitespace-nowrap border-sky-200 bg-sky-50 text-sky-700";
+    default:
+      return "whitespace-nowrap border-slate-200 bg-slate-50 text-slate-700";
+  }
+};
 
 const AdminDashboard: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -126,10 +149,8 @@ const AdminDashboard: React.FC = () => {
   const handleRoleChange = async (targetUser: AdminUser, role: UserRole) => {
     if (!token) return;
     if (normalizeRole(targetUser.role) === role) return;
-    if (
-      role === USER_ROLES.ADMIN &&
-      !requireConfirm(t("admin.roleChangeAdminConfirm", { defaultValue: "C\u1ea5p quy\u1ec1n admin cho ng\u01b0\u1eddi d\u00f9ng n\u00e0y?" }))
-    ) {
+    if (role === USER_ROLES.ADMIN && !isAdminRole(targetUser.role)) {
+      toast.error(t("admin.roleAdminLocked"));
       return;
     }
 
@@ -137,30 +158,56 @@ const AdminDashboard: React.FC = () => {
     try {
       await adminApi.setUserRole(token, targetUser.id, role);
 
-      toast.success(t("admin.roleUpdateSuccess", { defaultValue: "\u0110\u00e3 c\u1eadp nh\u1eadt vai tr\u00f2 ng\u01b0\u1eddi d\u00f9ng." }));
+      toast.success(t("admin.roleUpdateSuccess"));
       await loadData();
     } catch (error: unknown) {
       if (isApiError(error) && error.status === 403) {
-        toast.error(t("admin.roleUpdateForbidden", { defaultValue: "B\u1ea1n kh\u00f4ng c\u00f3 quy\u1ec1n c\u1eadp nh\u1eadt vai tr\u00f2 ng\u01b0\u1eddi d\u00f9ng n\u00e0y." }));
+        toast.error(t("admin.roleUpdateForbidden"));
       } else {
-        toast.error(error instanceof Error ? error.message : t("admin.roleUpdateError", { defaultValue: "Kh\u00f4ng th\u1ec3 c\u1eadp nh\u1eadt vai tr\u00f2 ng\u01b0\u1eddi d\u00f9ng." }));
+        toast.error(error instanceof Error ? error.message : t("admin.roleUpdateError"));
       }
     } finally {
       setActionId(null);
     }
   };
 
-  const handleRevokeRecruiter = async (targetUser: AdminUser) => {
+  const handleRevokeRecruiterApplication = async (application: RecruiterApplication) => {
+    if (!token) return;
     if (
       !requireConfirm(
-        t("admin.revokeRecruiterConfirm", {
-          defaultValue: "Thu h\u1ed3i quy\u1ec1n nh\u00e0 tuy\u1ec3n d\u1ee5ng v\u00e0 chuy\u1ec3n ng\u01b0\u1eddi d\u00f9ng n\u00e0y v\u1ec1 \u1ee9ng vi\u00ean?",
-        }),
+        t("admin.revokeRecruiterConfirm"),
       )
     ) {
       return;
     }
-    await handleRoleChange(targetUser, USER_ROLES.CANDIDATE);
+
+    setActionId(application.id);
+    try {
+      await recruiterApi.revokeApplication(token, application.id);
+
+      toast.success(t("admin.revokeRecruiterSuccess"));
+      await loadData();
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, t("admin.revokeRecruiterError")));
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  const handleRestoreRecruiterApplication = async (application: RecruiterApplication) => {
+    if (!token) return;
+
+    setActionId(application.id);
+    try {
+      await recruiterApi.restoreApplication(token, application.id);
+
+      toast.success(t("admin.restoreRecruiterSuccess"));
+      await loadData();
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, t("admin.restoreRecruiterError")));
+    } finally {
+      setActionId(null);
+    }
   };
 
   const handleRestriction = async (targetUser: AdminUser, restricted: boolean) => {
@@ -370,7 +417,7 @@ const AdminDashboard: React.FC = () => {
                         <TableHead>{t("admin.users.fullName")}</TableHead>
                         <TableHead>{t("common.role")}</TableHead>
                         <TableHead>{t("common.status")}</TableHead>
-                        <TableHead className="text-right">{t("common.actions")}</TableHead>
+                        <TableHead className="text-center">{t("common.actions")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -388,45 +435,35 @@ const AdminDashboard: React.FC = () => {
                               {account.lastName} {account.firstName}
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline" className={getRoleBadgeClassName(account.role)}>
-                                {t(`role.${normalizeRole(account.role)}`, { defaultValue: account.role })}
-                              </Badge>
+                              <Select
+                                value={normalizeRole(account.role)}
+                                disabled={actionId === account.id || isAdminRole(account.role)}
+                                onValueChange={(role) => handleRoleChange(account, role as UserRole)}
+                              >
+                                <SelectTrigger
+                                  className={`h-auto w-fit rounded-full px-2.5 py-0.5 text-xs font-semibold shadow-none ${getRoleBadgeClassName(account.role)}`}
+                                >
+                                  <SelectValue placeholder={t("admin.users.setRole")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {(isAdminRole(account.role) ? [USER_ROLES.ADMIN] : assignableRoleOptions).map((role) => (
+                                    <SelectItem key={role} value={role}>
+                                      {t(`role.${role}`)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </TableCell>
                             <TableCell>
-                              <Badge variant={restricted ? "destructive" : "secondary"}>
+                              <Badge variant="outline" className={getAccountStatusBadgeClassName(Boolean(restricted))}>
                                 {restricted ? t("admin.users.restricted") : t("admin.users.active")}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <div className="flex flex-wrap justify-end gap-2">
+                              <div className="flex flex-wrap justify-center gap-2">
                                 <Button variant="outline" size="sm" onClick={() => setSelectedUser(account)}>
                                   <Eye className="h-4 w-4" />
                                   {t("common.view")}
-                                </Button>
-                                <Select
-                                  value={normalizeRole(account.role)}
-                                  disabled={actionId === account.id}
-                                  onValueChange={(role) => handleRoleChange(account, role as UserRole)}
-                                >
-                                  <SelectTrigger className="h-9 w-[150px]">
-                                    <SelectValue placeholder={t("admin.users.setRole", { defaultValue: "Ch\u1ecdn vai tr\u00f2" })} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {roleOptions.map((role) => (
-                                      <SelectItem key={role} value={role}>
-                                        {t(`role.${role}`)}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  disabled={actionId === account.id || !isRecruiterRole(account.role)}
-                                  onClick={() => handleRevokeRecruiter(account)}
-                                >
-                                  <UserCog className="h-4 w-4" />
-                                  {t("admin.users.revokeRecruiter", { defaultValue: "Thu h\u1ed3i recruiter" })}
                                 </Button>
                                 <Button
                                   variant="outline"
@@ -468,7 +505,7 @@ const AdminDashboard: React.FC = () => {
                             <TableHead>{t("common.company")}</TableHead>
                             <TableHead>{t("common.recruiter")}</TableHead>
                             <TableHead>{t("admin.jobs.postedDate")}</TableHead>
-                            <TableHead className="text-right">{t("common.actions")}</TableHead>
+                            <TableHead className="text-center">{t("common.actions")}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -479,7 +516,7 @@ const AdminDashboard: React.FC = () => {
                               <TableCell>{job.employerEmail || job.employerName || "-"}</TableCell>
                               <TableCell>{formatAdminDate(job.createdAt)}</TableCell>
                               <TableCell>
-                                <div className="flex justify-end gap-2">
+                                <div className="flex justify-center gap-2">
                                   <Button variant="outline" size="sm" onClick={() => setSelectedJob(job)}>
                                     <Eye className="h-4 w-4" />
                                     {t("common.details")}
@@ -507,7 +544,7 @@ const AdminDashboard: React.FC = () => {
                             <TableHead>{t("admin.jobs.titleColumn")}</TableHead>
                             <TableHead>{t("common.company")}</TableHead>
                             <TableHead>{t("admin.jobs.deletedDate")}</TableHead>
-                            <TableHead className="text-right">{t("common.actions")}</TableHead>
+                            <TableHead className="text-center">{t("common.actions")}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -517,7 +554,7 @@ const AdminDashboard: React.FC = () => {
                               <TableCell>{job.company || "-"}</TableCell>
                               <TableCell>{formatAdminDate(job.deletedAt)}</TableCell>
                               <TableCell>
-                                <div className="flex justify-end gap-2">
+                                <div className="flex justify-center gap-2">
                                   <Button variant="outline" size="sm" onClick={() => handleRestoreJob(job)}>
                                     <RotateCcw className="h-4 w-4" />
                                     {t("admin.jobs.restore")}
@@ -558,13 +595,15 @@ const AdminDashboard: React.FC = () => {
                           <TableHead>{t("admin.requests.applicantEmail")}</TableHead>
                           <TableHead>{t("admin.requests.registrationInfo")}</TableHead>
                           <TableHead>{t("common.status")}</TableHead>
-                          <TableHead>{t("admin.requests.note")}</TableHead>
-                          <TableHead className="text-right">{t("common.actions")}</TableHead>
+                          <TableHead className="text-center">{t("common.actions")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {requests.map((application) => {
-                          const pending = application.status === "PENDING";
+                          const status = normalizeRequestStatus(application.status);
+                          const pending = status === "PENDING";
+                          const revoked = status === "REVOKED";
+                          const reviewed = status === "APPROVED" || status === "REJECTED";
 
                           return (
                             <TableRow key={application.id}>
@@ -583,39 +622,58 @@ const AdminDashboard: React.FC = () => {
                                 )}
                               </TableCell>
                               <TableCell>
-                                <Badge
-                                  variant={
-                                    application.status === "APPROVED"
-                                      ? "secondary"
-                                      : application.status === "REJECTED"
-                                        ? "destructive"
-                                        : "outline"
-                                  }
-                                >
-                                  {t(`admin.requests.statuses.${application.status}`)}
+                                <Badge variant="outline" className={getRequestStatusBadgeClassName(application.status)}>
+                                  {t(`admin.requests.statuses.${status}`, { defaultValue: application.status })}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-sm text-muted-foreground">{application.reviewNote || "-"}</TableCell>
                               <TableCell>
-                                <div className="flex justify-end gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={!pending || actionId === application.id}
-                                    onClick={() => handleReviewRequest(application, true)}
-                                  >
-                                    <CheckCircle2 className="h-4 w-4" />
-                                    {t("admin.requests.approve")}
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    disabled={!pending || actionId === application.id}
-                                    onClick={() => setRejectingRequest(application)}
-                                  >
-                                    <XCircle className="h-4 w-4" />
-                                    {t("admin.requests.reject")}
-                                  </Button>
+                                <div className="flex justify-center gap-2">
+                                  {pending && (
+                                    <>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={actionId === application.id}
+                                        onClick={() => handleReviewRequest(application, true)}
+                                      >
+                                        <CheckCircle2 className="h-4 w-4" />
+                                        {t("admin.requests.approve")}
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        disabled={actionId === application.id}
+                                        onClick={() => setRejectingRequest(application)}
+                                      >
+                                        <XCircle className="h-4 w-4" />
+                                        {t("admin.requests.reject")}
+                                      </Button>
+                                    </>
+                                  )}
+                                  {reviewed && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+                                      disabled={actionId === application.id}
+                                      onClick={() => handleRevokeRecruiterApplication(application)}
+                                    >
+                                      <UserCog className="h-4 w-4" />
+                                      {t("admin.requests.revoke")}
+                                    </Button>
+                                  )}
+                                  {revoked && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+                                      disabled={actionId === application.id}
+                                      onClick={() => handleRestoreRecruiterApplication(application)}
+                                    >
+                                      <RotateCcw className="h-4 w-4" />
+                                      {t("admin.requests.restore")}
+                                    </Button>
+                                  )}
                                 </div>
                               </TableCell>
                             </TableRow>
@@ -644,7 +702,7 @@ const AdminDashboard: React.FC = () => {
           {selectedUser && (
             <div className="grid gap-3 text-sm md:grid-cols-2">
               <div><strong>Email:</strong> {selectedUser.email}</div>
-              <div><strong>{t("common.role")}:</strong> {selectedUser.role}</div>
+              <div><strong>{t("common.role")}:</strong> {t(`role.${normalizeRole(selectedUser.role)}`, { defaultValue: selectedUser.role })}</div>
               <div><strong>{t("admin.users.fullName")}:</strong> {selectedUser.lastName} {selectedUser.firstName}</div>
               <div><strong>{t("admin.userDialog.phone")}:</strong> {selectedUser.phoneNumber || "-"}</div>
               <div><strong>{t("admin.userDialog.gender")}:</strong> {selectedUser.gender || "-"}</div>

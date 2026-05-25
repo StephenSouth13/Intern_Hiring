@@ -44,8 +44,9 @@
   },
   "role": {
     "CANDIDATE": "Ứng viên",
-    "RECRUITER": "Nhà tuyển dụng",
-    "ADMIN": "Quản trị viên"
+    "RECRUITER": "Tuyển dụng",
+    "MODERATOR": "Điều phối",
+    "ADMIN": "Quản trị"
   },
   "language": {
     "placeholder": "Ngôn ngữ",
@@ -63,7 +64,8 @@
     "featured": "Nổi bật",
     "jobs": "Việc làm",
     "partners": "Đối tác",
-    "recruitment": "Tuyển dụng"
+    "recruitment": "Tuyển dụng",
+    "recruiterDashboard": "Tuyển dụng"
   },
   "auth": {
     "restrictedMessage": "Tài khoản của bạn đang bị hạn chế. Vui lòng liên hệ quản trị viên.",
@@ -183,7 +185,10 @@
       "advanced": "Tìm kiếm nâng cao",
       "district": "Quận/Huyện",
       "ward": "Phường/Xã",
+      "districtPlaceholder": "Chọn tỉnh/thành phố trước",
+      "districtSelectPlaceholder": "Chọn quận/huyện",
       "wardPlaceholder": "Chọn quận/huyện trước",
+      "wardSelectPlaceholder": "Chọn phường/xã",
       "locationMap": {
         "label": "Vị trí Google Maps",
         "placeholder": "Nhập thành phố, quận/huyện hoặc địa chỉ",
@@ -220,6 +225,72 @@
           "thuDuc": "Thành phố Thủ Đức"
         }
       }
+    }
+  },
+  "recruiter": {
+    "badge": "RECRUITER",
+    "title": "Trang nhà tuyển dụng",
+    "description": "Đăng việc làm mới và quản lý trạng thái hiển thị cho các bài đăng của bạn.",
+    "stats": {
+      "total": "Tổng bài đăng",
+      "visible": "Đang hiển thị",
+      "hidden": "Đã ẩn"
+    },
+    "form": {
+      "title": "Đăng việc làm mới",
+      "jobTitle": "Tiêu đề việc làm",
+      "jobTitlePlaceholder": "Ví dụ: Thực tập sinh Frontend",
+      "company": "Công ty",
+      "companyPlaceholder": "Tên công ty",
+      "employerName": "Tên nhà tuyển dụng",
+      "employerEmail": "Email nhà tuyển dụng",
+      "location": "Địa điểm",
+      "locationPlaceholder": "Ví dụ: Quận 1, TP. Hồ Chí Minh",
+      "salary": "Mức lương",
+      "salaryPlaceholder": "Ví dụ: 5.000.000 VND",
+      "type": "Loại công việc",
+      "typePlaceholder": "Chọn loại công việc",
+      "jobDescription": "Mô tả",
+      "jobDescriptionPlaceholder": "Mô tả trách nhiệm, yêu cầu, quyền lợi và ghi chú ứng tuyển.",
+      "submit": "Đăng việc"
+    },
+    "types": {
+      "Internship": "Thực tập",
+      "Part-time": "Part-time",
+      "Full-time": "Full-time"
+    },
+    "jobs": {
+      "title": "Bài đăng của tôi",
+      "empty": "Bạn chưa đăng việc làm nào.",
+      "status": "Trạng thái",
+      "createdAt": "Ngày đăng",
+      "hide": "Ẩn",
+      "show": "Hiện",
+      "delete": "Xóa"
+    },
+    "status": {
+      "ACTIVE": "Đang hiển thị",
+      "VISIBLE": "Đang hiển thị",
+      "PUBLISHED": "Đang hiển thị",
+      "HIDDEN": "Đã ẩn",
+      "TRASHED": "Đã xóa",
+      "DELETED": "Đã xóa"
+    },
+    "deleteDialog": {
+      "title": "Xóa bài đăng?",
+      "description": "Hành động này sẽ xóa vĩnh viễn \"{{title}}\" và không thể khôi phục.",
+      "confirm": "Xóa vĩnh viễn"
+    },
+    "toast": {
+      "loadError": "Không thể tải bài đăng của bạn.",
+      "required": "Vui lòng nhập đầy đủ các trường bắt buộc.",
+      "createSuccess": "Đã đăng việc làm.",
+      "createError": "Không thể đăng việc làm.",
+      "hideSuccess": "Đã ẩn bài đăng.",
+      "showSuccess": "Đã hiển thị bài đăng.",
+      "statusError": "Không thể cập nhật trạng thái bài đăng.",
+      "deleteSuccess": "Đã xóa vĩnh viễn bài đăng.",
+      "deleteError": "Không thể xóa bài đăng."
     }
   },
   "profile": {
@@ -274,6 +345,15 @@
     "restrictionRemovedSuccess": "Đã bỏ hạn chế tài khoản.",
     "restrictionForbidden": "Bạn không có quyền cập nhật hạn chế tài khoản này.",
     "restrictionUpdateError": "Không thể cập nhật trạng thái hạn chế.",
+    "roleUpdateSuccess": "Đã cập nhật vai trò người dùng.",
+    "roleUpdateForbidden": "Bạn không có quyền cập nhật vai trò người dùng này.",
+    "roleUpdateError": "Không thể cập nhật vai trò người dùng.",
+    "roleAdminLocked": "Hệ thống chỉ có một admin, không thể cấp vai trò admin cho người dùng khác.",
+    "revokeRecruiterConfirm": "Thu hồi quyền tuyển dụng của người dùng này?",
+    "revokeRecruiterSuccess": "Đã thu hồi quyền tuyển dụng.",
+    "revokeRecruiterError": "Không thể thu hồi quyền tuyển dụng.",
+    "restoreRecruiterSuccess": "Đã khôi phục quyền tuyển dụng.",
+    "restoreRecruiterError": "Không thể khôi phục quyền tuyển dụng.",
     "trashJobSuccess": "Đã chuyển bài đăng vào thùng rác.",
     "trashJobError": "Không thể chuyển bài đăng vào thùng rác.",
     "restoreJobSuccess": "Đã khôi phục bài đăng.",
@@ -299,10 +379,11 @@
     "users": {
       "title": "Danh sách tài khoản người dùng",
       "fullName": "Họ tên",
-      "restricted": "Bị hạn chế",
+      "restricted": "Hạn chế",
       "active": "Hoạt động",
       "restrict": "Hạn chế",
-      "unrestrict": "Bỏ hạn chế"
+      "unrestrict": "Bỏ hạn chế",
+      "setRole": "Chọn vai trò"
     },
     "jobs": {
       "title": "Quản lý tin tuyển dụng",
@@ -323,10 +404,13 @@
       "note": "Ghi chú",
       "approve": "Duyệt",
       "reject": "Từ chối",
+      "revoke": "Thu hồi",
+      "restore": "Khôi phục",
       "statuses": {
         "PENDING": "Đang chờ",
         "APPROVED": "Đã duyệt",
-        "REJECTED": "Đã từ chối"
+        "REJECTED": "Từ chối",
+        "REVOKED": "Thu hồi"
       }
     },
     "userDialog": {

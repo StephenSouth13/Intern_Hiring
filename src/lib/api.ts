@@ -219,7 +219,7 @@ export type RecruiterApplication = {
   applicantId: number;
   applicantEmail: string;
   formData: Record<string, string>;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "REVOKED";
   reviewNote?: string;
   reviewedById?: number;
   reviewedAt?: string;
@@ -293,5 +293,17 @@ export const recruiterApi = {
       method: "POST",
       headers: authHeaders(token),
       body: JSON.stringify({ approved, reviewNote }),
+    }),
+
+  revokeApplication: (token: string, id: number) =>
+    apiRequest<RecruiterApplication>(`/api/recruiter/applications/${id}/revoke`, {
+      method: "POST",
+      headers: authHeaders(token),
+    }),
+
+  restoreApplication: (token: string, id: number) =>
+    apiRequest<RecruiterApplication>(`/api/recruiter/applications/${id}/restore`, {
+      method: "POST",
+      headers: authHeaders(token),
     }),
 };
